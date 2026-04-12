@@ -12,7 +12,6 @@ A aplicação utiliza conceitos de gamificação e uma interface intuitiva para 
 
 ## Tecnologias Utilizadas
 - Java
-- JavaFX (ainda não implementado)
 
 ## Objetivo
 Promover a inclusão digital de pessoas idosas, facilitando o uso de computadores por meio do desenvolvimento da habilidade de digitação.
