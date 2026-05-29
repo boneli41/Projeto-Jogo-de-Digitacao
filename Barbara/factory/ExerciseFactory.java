@@ -13,184 +13,161 @@ public class ExerciseFactory {
         all.addAll(createLevel3());
         all.addAll(createLevel4());
         all.addAll(createLevel5());
+        all.addAll(createLevel6());
+        all.addAll(createLevel7());
+        all.addAll(createLevel8());
         return all;
     }
 
     // ----------------------------------------------------------------
-    // Nível 1  —  Frases muito curtas, palavras simples
+    // Nível 1 — Vogais simples (a e i o u)
     // ----------------------------------------------------------------
     private static List<Exercise> createLevel1() {
         List<Exercise> list = new ArrayList<>();
-        list.add(new SentenceExercise("Eu amo minha casa.",
-                "O lar é o melhor lugar", 1));
-        list.add(new SentenceExercise("O sol é muito lindo.",
-                "Admirando a natureza", 1));
-        list.add(new SentenceExercise("Eu gosto de flores.",
-                "Amor pelas plantas", 1));
-        list.add(new SentenceExercise("Minha família é boa.",
-                "Gratidão pela família", 1));
-        list.add(new SentenceExercise("O gato dorme no sofá.",
-                "O bichinho da casa", 1));
-        list.add(new SentenceExercise("Hoje o dia está lindo.",
-                "Apreciando o dia", 1));
-        list.add(new SentenceExercise("Eu tomo café todo dia.",
-                "Hábito matinal", 1));
-        list.add(new SentenceExercise("Bom dia para você!",
-                "Cumprimento com carinho", 1));
-        list.add(new SentenceExercise("Eu gosto de andar no parque.",
-                "Passeio ao ar livre", 1));
-        list.add(new SentenceExercise("Meu jardim tem muitas flores.",
-                "Cuidando do jardim", 1));
-        list.add(new SentenceExercise("A vida é muito bonita.",
-                "Gratidão pela vida", 1));
-        list.add(new SentenceExercise("Eu gosto de ouvir música.",
-                "Alegria na música", 1));
+        list.add(new SentenceExercise("a a a a a", "Letra a", 1));
+        list.add(new SentenceExercise("e e e e e", "Letra e", 1));
+        list.add(new SentenceExercise("i i i i i", "Letra i", 1));
+        list.add(new SentenceExercise("o o o o o", "Letra o", 1));
+        list.add(new SentenceExercise("u u u u u", "Letra u", 1));
+        list.add(new SentenceExercise("a e i a e i", "Vogais a e i", 1));
+        list.add(new SentenceExercise("o u a o u a", "Vogais o u a", 1));
+        list.add(new SentenceExercise("a e i o u", "Todas as vogais", 1));
         return list;
     }
 
     // ----------------------------------------------------------------
-    // Nível 2  —  Frases curtas com pontuação simples
+    // Nível 2 — Consoantes comuns (m n r s t l p b c)
     // ----------------------------------------------------------------
     private static List<Exercise> createLevel2() {
         List<Exercise> list = new ArrayList<>();
-        list.add(new SentenceExercise("Como você está se sentindo hoje?",
-                "Pergunta de carinho", 2));
-        list.add(new SentenceExercise("Minha neta veio me visitar ontem.",
-                "Visita da família", 2));
-        list.add(new SentenceExercise("Eu gosto de comer bolo de chocolate.",
-                "Sabores favoritos", 2));
-        list.add(new SentenceExercise("O pássaro cantou na janela de manhã.",
-                "Natureza ao redor", 2));
-        list.add(new SentenceExercise("Hoje eu fui caminhar no parque.",
-                "Cuidando da saúde", 2));
-        list.add(new SentenceExercise("Meu neto me ensinou a usar o celular.",
-                "Aprendendo com os jovens", 2));
-        list.add(new SentenceExercise("Eu preparei um almoço gostoso hoje.",
-                "Prazer em cozinhar", 2));
-        list.add(new SentenceExercise("A tarde está fresca e muito agradável.",
-                "Apreciando o clima", 2));
-        list.add(new SentenceExercise("Gosto de regar as plantas todo dia.",
-                "Cuidado com as plantas", 2));
-        list.add(new SentenceExercise("Minha família se reuniu no domingo.",
-                "Domingo em família", 2));
-        list.add(new SentenceExercise("Hoje lerei um livro muito interessante.",
-                "O prazer da leitura", 2));
-        list.add(new SentenceExercise("Eu ligo para minha filha toda semana.",
-                "Mantendo o contato", 2));
+        list.add(new SentenceExercise("ma me mi", "Sílabas com M", 2));
+        list.add(new SentenceExercise("na ne ni", "Sílabas com N", 2));
+        list.add(new SentenceExercise("ra re ri", "Sílabas com R", 2));
+        list.add(new SentenceExercise("sa se si", "Sílabas com S", 2));
+        list.add(new SentenceExercise("ta te ti", "Sílabas com T", 2));
+        list.add(new SentenceExercise("la le li", "Sílabas com L", 2));
+        list.add(new SentenceExercise("pa pe pi", "Sílabas com P", 2));
+        list.add(new SentenceExercise("ba be bi bo bu", "Sílabas com B", 2));
         return list;
     }
 
     // ----------------------------------------------------------------
-    // Nível 3  —  Frases médias com conteúdo do dia a dia
+    // Nível 3 — Vogais acentuadas (ã â á à é ê í ó ô ú ç)
     // ----------------------------------------------------------------
     private static List<Exercise> createLevel3() {
         List<Exercise> list = new ArrayList<>();
-        list.add(new SentenceExercise(
-                "Aprendo a usar o computador para falar com a família.",
-                "Tecnologia para se conectar", 3));
-        list.add(new SentenceExercise(
-                "Toda manhã eu tomo café e olho o jardim florido.",
-                "Rotina matinal com alegria", 3));
-        list.add(new SentenceExercise(
-                "Meus filhos e netos são a minha maior alegria na vida.",
-                "Amor pela família", 3));
-        list.add(new SentenceExercise(
-                "O médico disse que caminhar faz muito bem para a saúde.",
-                "Conselho de saúde", 3));
-        list.add(new SentenceExercise(
-                "Hoje vou enviar uma mensagem para minha amiga querida.",
-                "Amizade e comunicação", 3));
-        list.add(new SentenceExercise(
-                "Preparei um bolo para o aniversário do meu neto hoje.",
-                "Celebrando com amor", 3));
-        list.add(new SentenceExercise(
-                "Gosto de sentar na varanda e apreciar o pôr do sol.",
-                "Momentos de paz", 3));
-        list.add(new SentenceExercise(
-                "Aprender coisas novas me faz sentir feliz e animado.",
-                "Alegria no aprendizado", 3));
-        list.add(new SentenceExercise(
-                "Minha receita de bolo de laranja é famosa na família.",
-                "Tradição culinária", 3));
-        list.add(new SentenceExercise(
-                "Com paciência e dedicação eu aprendo cada vez mais.",
-                "O valor da prática", 3));
-        list.add(new SentenceExercise(
-                "O jardim da minha casa está cheio de rosas vermelhas.",
-                "Beleza no jardim", 3));
-        list.add(new SentenceExercise(
-                "Ligar para os amigos me deixa mais alegre e animada.",
-                "O poder da amizade", 3));
+        list.add(new SentenceExercise("á é í ó ú", "Acento Agudo: Segure o botão de acento agudo ao lado da letra P e aperte a vogal", 3));
+        list.add(new SentenceExercise("ã õ ã õ", "Til: Segure o botão do til ao lado do c cedilha e aperte a vogal", 3));
+        list.add(new SentenceExercise("A E I O U", "Teclas maiúsculas: Aperte o botão Caps Lock no lado esquerdo do teclado ou segure shift ao apertar a tecla", 3));
+        list.add(new SentenceExercise("â ê î ô û", "Circunflexo: Segure a tecla Shift (seta para cima no canto inferior esquerdo do teclado), a tecla do til e aperte a vogal", 3));
+        list.add(new SentenceExercise("à è ì ò ù", "Crase: Segure a tecla Shift (seta no canto inferior esquerdo do teclado), a tecla do acento agudo e aperte a vogal ", 3));
+        list.add(new SentenceExercise("ç ç ç ç", "Cedilha", 3));
+        list.add(new SentenceExercise("mãe pão não", "Palavras com til", 3));
+        list.add(new SentenceExercise("café água açúcar", "Palavras do cotidiano", 3));
         return list;
     }
 
     // ----------------------------------------------------------------
-    // Nível 4  —  Frases mais longas com reflexões do cotidiano
+    // Nível 4 — Pontuação (. , : ; ! ?)
     // ----------------------------------------------------------------
     private static List<Exercise> createLevel4() {
         List<Exercise> list = new ArrayList<>();
-        list.add(new SentenceExercise(
-                "Cada dia que passa aprendendo algo novo me faz sentir muito bem.",
-                "Crescimento pessoal", 4));
-        list.add(new SentenceExercise(
-                "Hoje liguei para minha filha e conversamos por mais de uma hora.",
-                "Conversas que aquecem o coração", 4));
-        list.add(new SentenceExercise(
-                "O computador me ajuda a ver fotos e falar com quem eu amo.",
-                "Tecnologia e afeto", 4));
-        list.add(new SentenceExercise(
-                "Tenho muito orgulho de estar aprendendo a usar o teclado bem.",
-                "Orgulho do progresso", 4));
-        list.add(new SentenceExercise(
-                "Minha neta disse que eu estou melhorando muito na digitação.",
-                "Elogio que emociona", 4));
-        list.add(new SentenceExercise(
-                "Acordei cedo hoje e fui ao mercado buscar frutas e verduras frescas.",
-                "Dia a dia ativo", 4));
-        list.add(new SentenceExercise(
-                "Saúde, paz e amor ao lado da família são as coisas mais importantes.",
-                "Os valores da vida", 4));
-        list.add(new SentenceExercise(
-                "Com um pouco de prática todo dia eu vou digitar cada vez melhor.",
-                "Confiança no progresso", 4));
-        list.add(new SentenceExercise(
-                "Passei a tarde toda olhando fotos antigas e lembrando momentos felizes.",
-                "Memórias guardadas com carinho", 4));
-        list.add(new SentenceExercise(
-                "Meu filho instalou o programa e agora eu jogo com ele pela internet.",
-                "Tecnologia que aproxima", 4));
+        list.add(new SentenceExercise("sim. não.", "Ponto final", 4));
+        list.add(new SentenceExercise("pão, leite, café", "Vírgula", 4));
+        list.add(new SentenceExercise("atenção: leia.", "Dois-pontos", 4));
+        list.add(new SentenceExercise("devagar; com calma.", "Ponto e vírgula", 4));
+        list.add(new SentenceExercise("que bom!", "Exclamação", 4));
+        list.add(new SentenceExercise("tudo bem?", "Interrogação", 4));
+        list.add(new SentenceExercise("bom dia! tudo bem?", "Exclamação e interrogação", 4));
+        list.add(new SentenceExercise("leite, pão e café.", "Vírgula e ponto final", 4));
         return list;
     }
 
     // ----------------------------------------------------------------
-    // Nível 5  —  Frases completas e elaboradas
+    // Nível 5 — Frases de 2 a 3 palavras sem acento
     // ----------------------------------------------------------------
     private static List<Exercise> createLevel5() {
         List<Exercise> list = new ArrayList<>();
+        list.add(new SentenceExercise("bom dia", "Cumprimento", 5));
+        list.add(new SentenceExercise("boa tarde", "Cumprimento da tarde", 5));
+        list.add(new SentenceExercise("com licença", "Educacao no dia a dia", 5));
+        list.add(new SentenceExercise("muito obrigado", "Gratidao simples", 5));
+        list.add(new SentenceExercise("tudo bem", "Pergunta simples", 5));
+        list.add(new SentenceExercise("ate logo", "Despedida", 5));
+        list.add(new SentenceExercise("por favor", "Pedido educado", 5));
+        list.add(new SentenceExercise("de nada", "Resposta gentil", 5));
+        return list;
+    }
+
+    // ----------------------------------------------------------------
+    // Nível 6 — Frases de 2 a 3 palavras com acento e pontuação
+    // ----------------------------------------------------------------
+    private static List<Exercise> createLevel6() {
+        List<Exercise> list = new ArrayList<>();
+        list.add(new SentenceExercise("Bom dia!", "Cumprimento com pontuação", 6));
+        list.add(new SentenceExercise("Tudo bem?", "Pergunta com pontuação", 6));
+        list.add(new SentenceExercise("Com licença.", "Educação no dia a dia", 6));
+        list.add(new SentenceExercise("Muito obrigado!", "Gratidão com ênfase", 6));
+        list.add(new SentenceExercise("Até logo!", "Despedida animada", 6));
+        list.add(new SentenceExercise("Por favor.", "Pedido educado", 6));
+        list.add(new SentenceExercise("Que ótimo!", "Reação positiva", 6));
+        list.add(new SentenceExercise("Boa noite!", "Cumprimento noturno", 6));
+        return list;
+    }
+
+    // ----------------------------------------------------------------
+    // Nível 7 — Frases curtas de 4 a 6 palavras
+    // ----------------------------------------------------------------
+    private static List<Exercise> createLevel7() {
+        List<Exercise> list = new ArrayList<>();
+        list.add(new SentenceExercise("Eu tomo café todo dia.",
+                "Hábito matinal", 7));
+        list.add(new SentenceExercise("O mercado abre às oito.",
+                "Rotina de compras", 7));
+        list.add(new SentenceExercise("Hoje eu fui ao banco.",
+                "Tarefa do dia", 7));
+        list.add(new SentenceExercise("Minha filha me ligou hoje.",
+                "Contato com a família", 7));
+        list.add(new SentenceExercise("O ônibus passa às sete.",
+                "Transporte público", 7));
+        list.add(new SentenceExercise("Preciso comprar pão amanhã.",
+                "Lembrança do dia a dia", 7));
+        list.add(new SentenceExercise("O médico atende às três.",
+                "Consulta médica", 7));
+        list.add(new SentenceExercise("Eu gosto de chá quente.",
+                "Preferência pessoal", 7));
+        return list;
+    }
+
+    // ----------------------------------------------------------------
+    // Nível 8 — Frases médias de 7 a 10 palavras
+    // ----------------------------------------------------------------
+    private static List<Exercise> createLevel8() {
+        List<Exercise> list = new ArrayList<>();
         list.add(new SentenceExercise(
-                "A vida fica mais rica e bonita quando a gente continua aprendendo sempre.",
-                "Sabedoria de viver", 5));
+                "Amanhã vou ao mercado comprar frutas e verduras.",
+                "Planejando as compras", 8));
         list.add(new SentenceExercise(
-                "Agradeço todos os dias pelas pessoas maravilhosas que tenho na minha vida.",
-                "Gratidão que enche o coração", 5));
+                "Minha consulta com o médico é na quinta-feira.",
+                "Compromisso de saúde", 8));
         list.add(new SentenceExercise(
-                "Com saúde, disposição e muita vontade de aprender tudo se torna possível.",
-                "Determinação e alegria", 5));
+                "Eu preciso ligar para a farmácia mais tarde.",
+                "Tarefa da tarde", 8));
         list.add(new SentenceExercise(
-                "Minha vida mudou muito depois que aprendi a me comunicar pelo computador.",
-                "Transformação pela tecnologia", 5));
+                "O almoço de hoje foi arroz, feijão e frango.",
+                "Refeição do dia", 8));
         list.add(new SentenceExercise(
-                "Não importa a idade que temos, pois sempre é hora de aprender algo novo.",
-                "Nunca é tarde para aprender", 5));
+                "Meu neto vai me visitar no final de semana.",
+                "Visita da família", 8));
         list.add(new SentenceExercise(
-                "Cada tecla que digito certo me deixa mais feliz e orgulhosa de mim mesma.",
-                "Conquistas que emocionam", 5));
+                "Hoje paguei as contas e fui ao correio.",
+                "Dia de resolver pendências", 8));
         list.add(new SentenceExercise(
-                "Os momentos ao lado da família são os que mais ficam guardados no coração.",
-                "O tesouro dos momentos", 5));
+                "O vizinho me ajudou a carregar as compras.",
+                "Gentileza no bairro", 8));
         list.add(new SentenceExercise(
-                "Hoje enviei uma mensagem para todos os meus amigos dizendo que os amo muito.",
-                "Amor expresso com palavras", 5));
+                "Preciso levar o cachorro ao veterinário amanhã.",
+                "Cuidado com o animal", 8));
         return list;
     }
 }

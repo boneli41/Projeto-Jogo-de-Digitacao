@@ -1,5 +1,8 @@
 package model;
 
+import java.io.FileWriter;
+import java.io.IOException;
+
 public abstract class Exercise {
 
     protected String targetText;
@@ -20,18 +23,51 @@ public abstract class Exercise {
     public abstract String getInstructions();
 
     public int calculateScore(int correctChars, int totalChars, long timeUsedMs) {
+
         if (totalChars == 0) return 0;
+
         double accuracy = (double) correctChars / totalChars;
         double timeFraction = (double) timeUsedMs / (timeLimit * 1000L);
         double timeBonus = Math.max(0.0, 1.0 - timeFraction) * 0.5;
-        return (int) (xpReward * accuracy * (1.0 + timeBonus));
+
+        int score = (int) (xpReward * accuracy * (1.0 + timeBonus));
+
+        saveScore(score);
+
+        return score;
+    }
+
+    private void saveScore(int score) {
+
+        try {
+
+            FileWriter writer = new FileWriter("scores.txt", true);
+
+            writer.write(
+                    "Category: " + getCategory() +
+                            " | Score: " + score +
+                            " | Difficulty: " + difficulty +
+                            "\n"
+            );
+
+            writer.close();
+
+        } catch (IOException e) {
+
+            System.out.println("Error saving score.");
+            e.printStackTrace();
+
+        }
     }
 
     public int calculateStars(double accuracy, long timeUsedMs) {
+
         double timeFraction = (double) timeUsedMs / (timeLimit * 1000L);
+
         if (accuracy >= 0.95 && timeFraction <= 0.70) return 3;
         if (accuracy >= 0.80) return 2;
         if (accuracy >= 0.60) return 1;
+
         return 0;
     }
 
