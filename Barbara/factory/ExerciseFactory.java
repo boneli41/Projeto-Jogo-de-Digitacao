@@ -18,6 +18,25 @@ public class ExerciseFactory {
         all.addAll(createLevel8());
         return all;
     }
+    public static List<Exercise> createExercisesForLevel(int level) {
+
+        switch (level) {
+
+            case 1: return createLevel1();
+            case 2: return createLevel2();
+            case 3: return createLevel3();
+            case 4: return createLevel4();
+
+            case 5: return createLevel5();
+            case 6: return createLevel6();
+
+            case 7: return createLevel7();
+            case 8: return createLevel8();
+
+            default: return createLevel1();
+        }
+    }
+
 
     // ----------------------------------------------------------------
     // Nível 1 — Vogais simples (a e i o u)
@@ -169,5 +188,7 @@ public class ExerciseFactory {
                 "Preciso levar o cachorro ao veterinário amanhã.",
                 "Cuidado com o animal", 8));
         return list;
+
+
     }
 }

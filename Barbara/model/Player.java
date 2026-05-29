@@ -8,68 +8,106 @@ public class Player {
     private String name;
     private int lives;
     private int totalScore;
+
     private int gameLevel;
+    private int maxLevel;
+
     private int xp;
     private int exercisesCompleted;
     private int streak;
+
     private List<String> achievements;
 
-    public static final int MAX_LIVES = 3;
-    private static final int[] XP_THRESHOLD = { 0, 100, 300, 600, 1000, 1500 };
+    private String difficultyName;
 
-    public Player(String name) {
+    public static final int MAX_LIVES = 3;
+
+    private static final int[] XP_THRESHOLD = {
+            0, 100, 300, 600, 1000, 1500
+    };
+
+    public Player(String name, int startingLevel, int maxLevel, String difficultyName) {
+
         this.name = name;
         this.lives = MAX_LIVES;
         this.totalScore = 0;
-        this.gameLevel = 1;
+
+        this.gameLevel = startingLevel;
+        this.maxLevel = maxLevel;
+
         this.xp = 0;
         this.exercisesCompleted = 0;
         this.streak = 0;
+
         this.achievements = new ArrayList<>();
+        this.difficultyName = difficultyName;
+    }
+
+    public String getDifficultyName() {
+        return difficultyName;
     }
 
     public void addXP(int amount) {
+
         this.xp += amount;
         this.totalScore += amount;
-        checkLevelUp();
+
         checkAchievements();
     }
 
-    private void checkLevelUp() {
-        if (gameLevel < 5 && xp >= XP_THRESHOLD[gameLevel]) {
-            gameLevel++;
-        }
-    }
+
 
     private void checkAchievements() {
-        if (exercisesCompleted >= 1 && !achievements.contains("Primeiro Passo")) {
+
+        if (exercisesCompleted >= 1 &&
+                !achievements.contains("Primeiro Passo")) {
+
             achievements.add("Primeiro Passo");
         }
-        if (exercisesCompleted >= 5 && !achievements.contains("Praticante")) {
+
+        if (exercisesCompleted >= 5 &&
+                !achievements.contains("Praticante")) {
+
             achievements.add("Praticante");
         }
-        if (exercisesCompleted >= 10 && !achievements.contains("Dedicado")) {
+
+        if (exercisesCompleted >= 10 &&
+                !achievements.contains("Dedicado")) {
+
             achievements.add("Dedicado");
         }
-        if (streak >= 3 && !achievements.contains("Em Sequência")) {
+
+        if (streak >= 3 &&
+                !achievements.contains("Em Sequência")) {
+
             achievements.add("Em Sequência");
         }
-        if (streak >= 5 && !achievements.contains("Imparável")) {
+
+        if (streak >= 5 &&
+                !achievements.contains("Imparável")) {
+
             achievements.add("Imparável");
         }
-        if (totalScore >= 500 && !achievements.contains("500 Pontos")) {
+
+        if (totalScore >= 500 &&
+                !achievements.contains("500 Pontos")) {
+
             achievements.add("500 Pontos");
         }
     }
 
     public void loseLife() {
+
         if (lives > 0) lives--;
+
         streak = 0;
     }
 
     public void completeExercise() {
+
         exercisesCompleted++;
         streak++;
+
         checkAchievements();
     }
 
@@ -78,34 +116,76 @@ public class Player {
     }
 
     public String getLevelName() {
+
         switch (gameLevel) {
+
             case 1: return "Iniciante";
             case 2: return "Aprendiz";
             case 3: return "Intermediário";
             case 4: return "Avançado";
             case 5: return "Especialista";
+            case 6: return "Experiente";
+            case 7: return "Mestre";
+            case 8: return "Lenda";
+
             default: return "Iniciante";
         }
     }
 
     public int getXpForNextLevel() {
+
         if (gameLevel >= 5) return XP_THRESHOLD[5];
+
         return XP_THRESHOLD[gameLevel];
     }
 
     public int getXpProgress() {
-        int prevThreshold = gameLevel > 1 ? XP_THRESHOLD[gameLevel - 1] : 0;
+
+        int prevThreshold =
+                gameLevel > 1
+                        ? XP_THRESHOLD[Math.min(gameLevel - 1, 5)]
+                        : 0;
+
         int nextThreshold = getXpForNextLevel();
+
         if (nextThreshold == prevThreshold) return 100;
-        return (int)(((double)(xp - prevThreshold) / (nextThreshold - prevThreshold)) * 100);
+
+        return (int)(((double)(xp - prevThreshold)
+                / (nextThreshold - prevThreshold)) * 100);
     }
 
-    public String getName()                   { return name; }
-    public int getLives()                     { return lives; }
-    public int getTotalScore()                { return totalScore; }
-    public int getGameLevel()                 { return gameLevel; }
-    public int getXp()                        { return xp; }
-    public int getExercisesCompleted()        { return exercisesCompleted; }
-    public int getStreak()                    { return streak; }
-    public List<String> getAchievements()     { return new ArrayList<>(achievements); }
+    public void setGameLevel(int level) {
+        this.gameLevel = level;
+    }
+
+    public String getName() { return name; }
+
+    public int getLives() { return lives; }
+
+    public int getTotalScore() { return totalScore; }
+
+    public int getGameLevel() { return gameLevel; }
+
+    public int getMaxLevel() { return maxLevel; }
+
+    public int getXp() { return xp; }
+
+    public int getExercisesCompleted() {
+        return exercisesCompleted;
+    }
+
+    public int getStreak() { return streak; }
+
+    public List<String> getAchievements() {
+        return new ArrayList<>(achievements);
+    }
+
+    public void setMaxLevel(int maxLevel) {
+        this.maxLevel = maxLevel;
+    }
+
+    public void setDifficultyName(String difficultyName) {
+        this.difficultyName = difficultyName;
+    }
+
 }

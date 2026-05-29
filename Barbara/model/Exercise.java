@@ -30,35 +30,9 @@ public abstract class Exercise {
         double timeFraction = (double) timeUsedMs / (timeLimit * 1000L);
         double timeBonus = Math.max(0.0, 1.0 - timeFraction) * 0.5;
 
-        int score = (int) (xpReward * accuracy * (1.0 + timeBonus));
-
-        saveScore(score);
-
-        return score;
+        return (int) (xpReward * accuracy * (1.0 + timeBonus));
     }
 
-    private void saveScore(int score) {
-
-        try {
-
-            FileWriter writer = new FileWriter("scores.txt", true);
-
-            writer.write(
-                    "Category: " + getCategory() +
-                            " | Score: " + score +
-                            " | Difficulty: " + difficulty +
-                            "\n"
-            );
-
-            writer.close();
-
-        } catch (IOException e) {
-
-            System.out.println("Error saving score.");
-            e.printStackTrace();
-
-        }
-    }
 
     public int calculateStars(double accuracy, long timeUsedMs) {
 
