@@ -53,12 +53,12 @@ public class ResultPanel extends BasePanel {
         ImageIcon headerIcon = new ImageIcon("ui/assets/header-resultado.png");
         if (headerIcon.getIconWidth() > 0) {
             // Definimos limites máximos para a arte se encaixar no topo
-            int maxW = 850; 
+            int maxW = 850;
             int maxH = 140;
-            
+
             int imgW = headerIcon.getIconWidth();
             int imgH = headerIcon.getIconHeight();
-            
+
             // Calculamos a proporção para caber nos limites sem distorcer
             double scale = Math.min(1.0, Math.min((double) maxW / imgW, (double) maxH / imgH));
             int finalW = (int) (imgW * scale);
@@ -75,7 +75,7 @@ public class ResultPanel extends BasePanel {
     private JPanel buildContent() {
         JPanel container = new JPanel(new GridBagLayout()); container.setOpaque(false);
         container.setBorder(BorderFactory.createEmptyBorder(0, 30, 0, 30));
-        
+
         RoundedPanel card = new RoundedPanel(40, Color.WHITE);
         card.setLayout(new GridBagLayout());
         card.setBorder(BorderFactory.createEmptyBorder(20, 50, 20, 50));

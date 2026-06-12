@@ -125,7 +125,7 @@ public class GamePanel extends BasePanel { // Define a classe que herda as cores
 
         JLabel title = label("SEU STATUS", FONT_SMALL, COLOR_SECONDARY, SwingConstants.LEFT);
         title.setAlignmentX(Component.CENTER_ALIGNMENT);
-        
+
         side.add(title);
         side.add(Box.createVerticalStrut(20));
         side.add(sidebarCard("Pontos XP", lblSideXP = label("0", FONT_SUBTITLE, Color.WHITE, SwingConstants.CENTER), COLOR_ACCENT));
@@ -133,7 +133,7 @@ public class GamePanel extends BasePanel { // Define a classe que herda as cores
         side.add(sidebarCard("Sequência", lblSideStreak = label("0x", FONT_SUBTITLE, Color.WHITE, SwingConstants.CENTER), COLOR_ACCENT));
         side.add(Box.createVerticalStrut(15));
         side.add(sidebarCard("Nível Atual", lblSideLevel = label("1", FONT_SUBTITLE, Color.WHITE, SwingConstants.CENTER), COLOR_ACCENT));
-        
+
         side.add(Box.createVerticalStrut(20));
         lblNextLevelHint = label("Faltam 10 para Nível 2", FONT_SMALL, COLOR_PRIMARY, SwingConstants.CENTER);
         side.add(lblNextLevelHint);
@@ -174,7 +174,7 @@ public class GamePanel extends BasePanel { // Define a classe que herda as cores
 
         txtExercise = new JTextPane(); // Componente de texto que permite estilos diferentes
         txtExercise.setEditable(false); // Usuário não pode clicar e apagar o texto base
-        txtExercise.setFont(FONT_EXERCISE); 
+        txtExercise.setFont(FONT_EXERCISE);
         txtExercise.setBackground(COLOR_WHITE); // Fundo branco
         txtExercise.setFocusable(false); // O foco do teclado nunca deve ficar aqui
         txtExercise.setPreferredSize(new Dimension(0, 130)); // Altura fixa para o texto
@@ -200,7 +200,7 @@ public class GamePanel extends BasePanel { // Define a classe que herda as cores
         // Estética moderna: Campo de entrada arredondado estilo "search bar"
         txtInput.putClientProperty("JTextField.placeholderText", "Comece a digitar aqui...");
         txtInput.putClientProperty("JComponent.roundRect", true);
-        
+
         txtInput.addKeyListener(new KeyAdapter() { // Escuta cada tecla pressionada
             @Override public void keyReleased(KeyEvent e) { // Quando o usuário solta a tecla...
                 if (active) onInput(); // ...se o jogo estiver ativo, processa a entrada
@@ -221,15 +221,15 @@ public class GamePanel extends BasePanel { // Define a classe que herda as cores
         bar.setLayout(new BorderLayout(15, 0));
         bar.setBorder(BorderFactory.createEmptyBorder(10, 40, 25, 40)); // Margem inferior aumentada para 25
 
-        lblProgress = label("Exercicio 1 de 47", FONT_SMALL, Color.WHITE, SwingConstants.LEFT); 
+        lblProgress = label("Exercicio 1 de 47", FONT_SMALL, Color.WHITE, SwingConstants.LEFT);
         lblProgress.setPreferredSize(new Dimension(200, 24)); // Tamanho fixo
 
         progressBar = new JProgressBar(0, 100); // Barra visual de progresso
-        progressBar.setForeground(Color.WHITE); 
-        progressBar.setBackground(new Color(255, 255, 255, 60)); 
-        progressBar.setBorderPainted(false); 
+        progressBar.setForeground(Color.WHITE);
+        progressBar.setBackground(new Color(255, 255, 255, 60));
+        progressBar.setBorderPainted(false);
         progressBar.setPreferredSize(new Dimension(0, 18)); // Altura da barra
-        
+
         JButton menuBtn = createModernButton("Sair", new Color(255, 255, 255, 40));
         menuBtn.setForeground(Color.WHITE);
         menuBtn.setPreferredSize(new Dimension(100, 40));
@@ -244,17 +244,28 @@ public class GamePanel extends BasePanel { // Define a classe que herda as cores
     // ================================================================
     //  API Pública chamada pelo TypingGame
     // ================================================================
-    public void startGame(Player p) { // Método para iniciar o jogo do zero
-        this.player = p; // Guarda o jogador recebido
-        this.exercises = ExerciseFactory.createAllExercises(); // Pede para a fábrica criar a lista de exercícios
-        this.exerciseIndex = 0; // Começa pelo primeiro exercício
-        loadExercise(); // Carrega o exercício na tela
+    public void startGame(Player p) {
+        this.player = p;
+
+        this.exercises =
+                ExerciseFactory.createCampaign();
+
+        this.exerciseIndex = 0;
+        loadExercise();
     }
 
-    public void nextExercise() { // Método para avançar para o próximo desafio
-        exerciseIndex++; // Aumenta o índice
-        if (exerciseIndex >= exercises.size()) exerciseIndex = 0; // Se acabar a lista, volta ao começo
-        loadExercise(); // Carrega o novo exercício
+    public void nextExercise() {
+
+        exerciseIndex++;
+
+        if (exerciseIndex >= exercises.size()) {
+
+            game.showFinalLevelResult(player);
+
+            return;
+        }
+
+        loadExercise();
     }
 
     // ================================================================
@@ -294,8 +305,8 @@ public class GamePanel extends BasePanel { // Define a classe que herda as cores
     private void tickTimer() { // Executado a cada 1 segundo
         timeLeft--; // Diminui um segundo
         Color timerColor = timeLeft <= 10 ? COLOR_DANGER // Se faltar 10s, fica vermelho (alerta)
-                         : timeLeft <= 20 ? COLOR_WARNING // Se faltar 20s, fica laranja
-                         : Color.WHITE; // Caso contrário, fica branco
+                : timeLeft <= 20 ? COLOR_WARNING // Se faltar 20s, fica laranja
+                : Color.WHITE; // Caso contrário, fica branco
         lblTimer.setText(timeLeft + "s"); // Atualiza o texto do tempo na tela
         lblTimer.setForeground(timerColor); // Aplica a cor de alerta
         if (timeLeft <= 0) onTimeUp(); // Se o tempo acabar, chama o fim do exercício
@@ -382,7 +393,7 @@ public class GamePanel extends BasePanel { // Define a classe que herda as cores
 
         int fs = stars, fx = xp, fw = wpm, ft = timeSeconds; // Variáveis finais para o timer
         Timer delay = new Timer(900, e -> // Cria um pequeno atraso de 0.9s antes de mudar de tela
-            game.showResult(player, fs, fx, current.getDescription(), fw, ft) // Mostra a tela de resultado
+                game.showResult(player, fs, fx, current.getDescription(), fw, ft) // Mostra a tela de resultado
         );
         delay.setRepeats(false); // O timer só deve rodar uma vez
         delay.start(); // Inicia o atraso
@@ -446,7 +457,7 @@ public class GamePanel extends BasePanel { // Define a classe que herda as cores
 
         // Atualiza a nova barra lateral
         lblSideXP.setText(String.valueOf(player.getTotalScore()));
-        lblSideLevel.setText(String.valueOf(player.getGameLevel()));
+        lblSideLevel.setText(String.valueOf(exerciseIndex + 1));
         lblSideStreak.setText(player.getStreak() + "x");
     }
 

@@ -3,12 +3,14 @@ package model;
 public class LetterExercise extends Exercise {
 
     public LetterExercise(String letters, String description) {
-        super(letters, description, 20, 1, 90);
+
+        super(letters, description, "Letras Básicas", 20, 1, 90);
+
     }
 
     @Override
     public String getCategory() {
-        return "Letras Basicas";
+        return category;
     }
 
     @Override

@@ -9,7 +9,7 @@ public abstract class BasePanel extends JPanel {
 
     protected TypingGame game;
 
-    protected static final Color COLOR_BG          = new Color(245, 247, 251); 
+    protected static final Color COLOR_BG          = new Color(245, 247, 251);
     protected static final Color COLOR_PRIMARY     = new Color( 37,  99, 235); // Azul Principal
     protected static final Color COLOR_DARK        = new Color( 30,  58, 138); // Azul Escuro
     protected static final Color COLOR_ACCENT      = new Color( 37,  99, 235); // Azul igual ao texto de "Bem-vindo"
@@ -66,11 +66,11 @@ public abstract class BasePanel extends JPanel {
         protected void paintComponent(Graphics g) {
             Graphics2D g2 = (Graphics2D) g.create();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            
+
             // Desenha a sombra com um pequeno recuo para garantir que não seja cortada
             g2.setColor(shadowColor);
             g2.fillRoundRect(3, 3, getWidth() - 7, getHeight() - 7, radius, radius);
-            
+
             // Desenha o corpo do painel
             g2.setColor(getBackground());
             g2.fillRoundRect(0, 0, getWidth() - 4, getHeight() - 4, radius, radius);
@@ -91,7 +91,7 @@ public abstract class BasePanel extends JPanel {
             Graphics2D g2 = (Graphics2D) g.create();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             GradientPaint gp = horizontal ? new GradientPaint(0, 0, color1, getWidth(), 0, color2)
-                                          : new GradientPaint(0, 0, color1, 0, getHeight(), color2);
+                    : new GradientPaint(0, 0, color1, 0, getHeight(), color2);
             g2.setPaint(gp);
             g2.fillRect(0, 0, getWidth(), getHeight());
             g2.dispose();

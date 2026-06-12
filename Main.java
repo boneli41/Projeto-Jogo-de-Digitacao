@@ -8,8 +8,8 @@ public class Main {
         try {
             // Inicializa o FlatLaf se a biblioteca estiver disponível em tempo de execução
             Class.forName("com.formdev.flatlaf.FlatLightLaf")
-                 .getMethod("setup")
-                 .invoke(null);
+                    .getMethod("setup")
+                    .invoke(null);
         } catch (Exception ignored) {}
 
         SwingUtilities.invokeLater(() -> new TypingGame().setVisible(true));

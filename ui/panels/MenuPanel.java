@@ -17,7 +17,7 @@ public class MenuPanel extends BasePanel {
     protected void initialize() {
         setLayout(new BorderLayout());
         setOpaque(false); // Garante que o painel base não pinte fundo cinza
-        
+
         // Estrutura principal da página com imagem de fundo
         JPanel content = new JPanel(new BorderLayout()) {
             private final Image bgImage = new ImageIcon("ui/assets/background-image.png").getImage();
@@ -39,10 +39,10 @@ public class MenuPanel extends BasePanel {
         header.setOpaque(false); // Remove o fundo sólido para herdar a cor de fundo da página
         header.setPreferredSize(new Dimension(0, 60));
         header.setBorder(BorderFactory.createEmptyBorder(0, 50, 0, 50));
-        
+
         // Alteramos a cor dos ícones para COLOR_PRIMARY para manter o contraste com o fundo claro
         JLabel headerIcons = label("", FONT_TITLE, COLOR_PRIMARY, SwingConstants.RIGHT);
-        headerIcons.setFont(new Font(Font.DIALOG, Font.BOLD, 36)); 
+        headerIcons.setFont(new Font(Font.DIALOG, Font.BOLD, 36));
         header.add(headerIcons, BorderLayout.EAST);
         return header;
     }
@@ -57,7 +57,7 @@ public class MenuPanel extends BasePanel {
         JPanel left = new JPanel(); left.setOpaque(false);
         left.setOpaque(false); // Reforço de transparência
         left.setLayout(new BoxLayout(left, BoxLayout.Y_AXIS));
-        
+
         // Logo carregada e redimensionada proporcionalmente para a lateral
         ImageIcon logoIcon = new ImageIcon("ui/assets/logo-digita-comigo.png");
         int w = 380; int h = 240; // Altura fallback caso a imagem demore a carregar
@@ -68,15 +68,15 @@ public class MenuPanel extends BasePanel {
         JLabel logoLabel = new JLabel(new ImageIcon(scaledLogo));
         logoLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         left.add(logoLabel);
-        
+
         left.add(Box.createVerticalStrut(8)); // Espaçamento entre logo e o cartão
 
         RoundedPanel welcome = new RoundedPanel(30, Color.WHITE);
         welcome.setLayout(new BoxLayout(welcome, BoxLayout.Y_AXIS));
-        welcome.setMaximumSize(new Dimension(400, 160)); 
+        welcome.setMaximumSize(new Dimension(400, 160));
         welcome.setBorder(BorderFactory.createEmptyBorder(15, 25, 15, 25)); // Padding reduzido
         welcome.setAlignmentX(Component.LEFT_ALIGNMENT);
-        
+
         welcome.add(label("Bem-vindo(a)!", FONT_SUBTITLE, COLOR_PRIMARY, SwingConstants.LEFT));
         welcome.add(label("<html><body style='width:250px'>Um jogo feito para ajudar você a aprender de forma leve e divertida.</body></html>", FONT_BODY, COLOR_TEXT, SwingConstants.LEFT));
         welcome.setOpaque(false);
@@ -87,7 +87,7 @@ public class MenuPanel extends BasePanel {
         left.add(buildJourneySection());
 
         left.add(Box.createVerticalGlue()); // Empurra o conteúdo para cima, evitando que o cartão estique
-        gbc.gridx = 0; gbc.weightx = 0.28; 
+        gbc.gridx = 0; gbc.weightx = 0.28;
         gbc.insets = new Insets(-60, 15, 10, 15); // Subimos menos (-60) para garantir que a base não suma
         main.add(left, gbc);
 
@@ -95,15 +95,15 @@ public class MenuPanel extends BasePanel {
         gbc.insets = new Insets(10, 15, 10, 15); // Restaura o espaçamento para as outras colunas
         JPanel center = new JPanel(new GridBagLayout()); center.setOpaque(false);
         GridBagConstraints centerGbc = new GridBagConstraints();
-        centerGbc.gridx = 0; centerGbc.gridy = 0; 
+        centerGbc.gridx = 0; centerGbc.gridy = 0;
         centerGbc.fill = GridBagConstraints.HORIZONTAL; centerGbc.anchor = GridBagConstraints.CENTER;
 
         // Sessão principal aumentada com bordas internas maiores
-        RoundedPanel card = new RoundedPanel(40, Color.WHITE); 
+        RoundedPanel card = new RoundedPanel(40, Color.WHITE);
         card.setLayout(new GridBagLayout());
         card.setBorder(BorderFactory.createEmptyBorder(35, 0, 0, 0));
 
-        GridBagConstraints cc = new GridBagConstraints(); 
+        GridBagConstraints cc = new GridBagConstraints();
         cc.gridx = 0; cc.fill = GridBagConstraints.HORIZONTAL;
 
         cc.gridy = 0;
@@ -114,7 +114,7 @@ public class MenuPanel extends BasePanel {
         nameField.setHorizontalAlignment(JTextField.CENTER); nameField.setPreferredSize(new Dimension(450, 70));
         nameField.putClientProperty("JTextField.placeholderText", "Ex: João");
         nameField.addActionListener(e -> startGame()); // Permite apertar ENTER
-        cc.gridy = 1; cc.insets = new Insets(5, 60, 20, 60); 
+        cc.gridy = 1; cc.insets = new Insets(5, 60, 20, 60);
         card.add(nameField, cc);
 
         JButton btn = createModernButton("INICIAR", COLOR_SUCCESS);
@@ -129,20 +129,20 @@ public class MenuPanel extends BasePanel {
         int finalW = maxW; int finalH = maxH;
 
         if (illustrationIcon.getIconWidth() > 0) {
-            double scale = Math.min((double)maxW / illustrationIcon.getIconWidth(), 
-                                    (double)maxH / illustrationIcon.getIconHeight());
+            double scale = Math.min((double)maxW / illustrationIcon.getIconWidth(),
+                    (double)maxH / illustrationIcon.getIconHeight());
             finalW = (int) (illustrationIcon.getIconWidth() * scale);
             finalH = (int) (illustrationIcon.getIconHeight() * scale);
         }
         Image scaledImg = illustrationIcon.getImage().getScaledInstance(finalW, finalH, Image.SCALE_SMOOTH);
-        cc.gridy = 3; cc.weighty = 1.0; 
+        cc.gridy = 3; cc.weighty = 1.0;
         cc.anchor = GridBagConstraints.SOUTH;
         // Insets zerados para colar a imagem na borda inferior e ocupar a largura total
-        cc.insets = new Insets(0, 0, 0, 0); 
+        cc.insets = new Insets(0, 0, 0, 0);
         card.add(new JLabel(new ImageIcon(scaledImg)), cc);
 
         center.add(card, centerGbc);
-        
+
         gbc.gridx = 1; gbc.weightx = 0.44; main.add(center, gbc);
 
         // Coluna Direita
@@ -166,9 +166,9 @@ public class MenuPanel extends BasePanel {
         features.setLayout(new BoxLayout(features, BoxLayout.Y_AXIS));
         features.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         String[] items = {
-            "•  Conheça o teclado", 
-            "•  Exercícios práticos", 
-            "•  Evolua sempre"
+                "•  Conheça o teclado",
+                "•  Exercícios práticos",
+                "•  Evolua sempre"
         };
         for (String i : items) {
             features.add(label(i, FONT_SMALL, COLOR_PRIMARY, SwingConstants.LEFT));
@@ -204,14 +204,14 @@ public class MenuPanel extends BasePanel {
         };
         flow.setLayout(new BoxLayout(flow, BoxLayout.Y_AXIS));
         flow.setOpaque(false);
-        
+
         JPanel icons = new JPanel(new GridLayout(1, 4)); icons.setOpaque(false);
         String[] symb = {"\uD83D\uDD13", "\uD83D\uDD12", "\uD83D\uDD12", "\uD83D\uDD12"};
         for (String s : symb) {
             JLabel l = label(s, new Font(Font.DIALOG, Font.PLAIN, 22), Color.WHITE, SwingConstants.CENTER);
             icons.add(l);
         }
-        
+
         JPanel labels = new JPanel(new GridLayout(1, 4)); labels.setOpaque(false);
         String[] texts = {"Minúsculas", "Maiúsculas", "Pontuação", "Acentos"};
         for (String t : texts) {
@@ -221,7 +221,7 @@ public class MenuPanel extends BasePanel {
         flow.add(icons);
         flow.add(Box.createVerticalStrut(8)); // Espaçamento fixo entre ícones e textos
         flow.add(labels);
-        
+
         journey.add(flow, BorderLayout.CENTER);
         journey.setAlignmentX(Component.LEFT_ALIGNMENT);
         return journey;
@@ -235,7 +235,7 @@ public class MenuPanel extends BasePanel {
         line.add(label(p, FONT_SMALL, COLOR_SECONDARY, SwingConstants.CENTER));
         return line;
     }
-        
+
     private JPanel createFooter() {
         // Usando uma cor sólida para um visual mais simples e limpo
         GradientPanel footer = new GradientPanel(COLOR_ACCENT, COLOR_ACCENT, true);

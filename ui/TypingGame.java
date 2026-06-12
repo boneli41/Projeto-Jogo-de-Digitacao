@@ -58,6 +58,16 @@ public class TypingGame extends JFrame {
         show(PANEL_RESULT);
     }
 
+    public void showFinalLevelResult(Player player) {
+
+        JOptionPane.showMessageDialog(
+                this,
+                "Parabéns! Você concluiu este nível!"
+        );
+
+        returnToMenu();
+    }
+
     public void continueGame() {
         gamePanel.nextExercise();
         show(PANEL_GAME);

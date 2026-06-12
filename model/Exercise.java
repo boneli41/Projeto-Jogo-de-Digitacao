@@ -7,10 +7,12 @@ public abstract class Exercise {
     protected int xpReward;
     protected int difficulty;
     protected int timeLimit;
+    protected String category;
 
-    public Exercise(String targetText, String description, int xpReward, int difficulty, int timeLimit) {
+    public Exercise(String targetText, String description, String category, int xpReward, int difficulty, int timeLimit) {
         this.targetText = targetText;
         this.description = description;
+        this.category = category;
         this.xpReward = xpReward;
         this.difficulty = difficulty;
         this.timeLimit = timeLimit;
