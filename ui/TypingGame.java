@@ -53,19 +53,40 @@ public class TypingGame extends JFrame {
         show(PANEL_GAME);
     }
 
-    public void showResult(Player player, int stars, int xpEarned, String exerciseName, int wpm, int timeSeconds) {
+    public void showResult(Player player, int stars, int xpEarned,
+                           String exerciseName, int wpm, int timeSeconds) {
         resultPanel.showResult(player, stars, xpEarned, exerciseName, wpm, timeSeconds);
         show(PANEL_RESULT);
     }
 
     public void showFinalLevelResult(Player player) {
+        // Salva o progresso final antes de voltar
+        player.saveToFile("ranking.txt");
 
-        JOptionPane.showMessageDialog(
+        // Diálogo mais amigável com opções
+        Object[] options = {"Ver Ranking", "Jogar Novamente", "Sair do Jogo"};
+        int choice = JOptionPane.showOptionDialog(
                 this,
-                "Parabéns! Você concluiu este nível!"
+                "<html><div style='text-align:center; font-size:14px;'>"
+                        + "<b>🎉 Parabéns, " + player.getName() + "!</b><br><br>"
+                        + "Você concluiu todos os exercícios!<br>"
+                        + "Pontuação final: <b>" + player.getTotalScore() + " pts</b><br>"
+                        + "Nível: <b>" + player.getLevelName() + "</b>"
+                        + "</div></html>",
+                "Jornada Concluída!",
+                JOptionPane.DEFAULT_OPTION,
+                JOptionPane.INFORMATION_MESSAGE,
+                null,
+                options,
+                options[0]
         );
 
-        returnToMenu();
+        if (choice == 1) {
+            // Joga novamente com o mesmo nome
+            startGame(new Player(player.getName()));
+        } else {
+            returnToMenu();
+        }
     }
 
     public void continueGame() {
@@ -74,6 +95,8 @@ public class TypingGame extends JFrame {
     }
 
     public void returnToMenu() {
+        // Atualiza o ranking no menu antes de exibir
+        menuPanel.refreshRanking();
         show(PANEL_MENU);
     }
 }

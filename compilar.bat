@@ -13,6 +13,7 @@ javac -cp "lib\*" -d out -encoding UTF-8 ^
   factory\ExerciseFactory.java ^
   ui\TypingGame.java ^
   ui\panels\BasePanel.java ^
+  ui\panels\KeyboardPanel.java ^
   ui\panels\MenuPanel.java ^
   ui\panels\GamePanel.java ^
   ui\panels\ResultPanel.java
