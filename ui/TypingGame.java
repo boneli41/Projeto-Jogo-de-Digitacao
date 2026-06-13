@@ -60,33 +60,9 @@ public class TypingGame extends JFrame {
     }
 
     public void showFinalLevelResult(Player player) {
-        // Salva o progresso final antes de voltar
         player.saveToFile("ranking.txt");
-
-        // Diálogo mais amigável com opções
-        Object[] options = {"Ver Ranking", "Jogar Novamente", "Sair do Jogo"};
-        int choice = JOptionPane.showOptionDialog(
-                this,
-                "<html><div style='text-align:center; font-size:14px;'>"
-                        + "<b>🎉 Parabéns, " + player.getName() + "!</b><br><br>"
-                        + "Você concluiu todos os exercícios!<br>"
-                        + "Pontuação final: <b>" + player.getTotalScore() + " pts</b><br>"
-                        + "Nível: <b>" + player.getLevelName() + "</b>"
-                        + "</div></html>",
-                "Jornada Concluída!",
-                JOptionPane.DEFAULT_OPTION,
-                JOptionPane.INFORMATION_MESSAGE,
-                null,
-                options,
-                options[0]
-        );
-
-        if (choice == 1) {
-            // Joga novamente com o mesmo nome
-            startGame(new Player(player.getName()));
-        } else {
-            returnToMenu();
-        }
+        resultPanel.showFinalResult(player);
+        show(PANEL_RESULT);
     }
 
     public void continueGame() {
