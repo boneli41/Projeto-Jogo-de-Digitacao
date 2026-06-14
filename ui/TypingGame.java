@@ -66,8 +66,9 @@ public class TypingGame extends JFrame {
     }
 
     public void continueGame() {
-        gamePanel.nextExercise();
-        show(PANEL_GAME);
+       if(gamePanel.nextExercise()) {
+           show(PANEL_GAME);
+       }
     }
 
     public void returnToMenu() {

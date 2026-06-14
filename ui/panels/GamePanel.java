@@ -335,13 +335,14 @@ public class GamePanel extends BasePanel {
         loadExercise();
     }
 
-    public void nextExercise() {
+    public boolean nextExercise() {
         exerciseIndex++;
         if (exerciseIndex >= exercises.size()) {
             game.showFinalLevelResult(player);
-            return;
+            return false;
         }
         loadExercise();
+        return true;
     }
 
     // ================================================================
