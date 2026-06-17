@@ -11,7 +11,35 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.List;
 
+
 public class GamePanel extends BasePanel {
+
+    // ===== PAUSE =====
+    private JButton btnPause;
+    private boolean paused = false;
+    private boolean isProcessingPause = false;
+
+    private void pausarJogo() {
+        if (isProcessingPause) return;
+        isProcessingPause = true;
+
+        paused = !paused;
+        btnPause.setText(paused ? "Continuar" : "Pausar");
+
+        if (paused) {
+            if (countdown != null) countdown.stop();
+            if (autoAdvanceTimer != null) autoAdvanceTimer.stop();
+            txtInput.setEnabled(false);
+            setFeedback("JOGO PAUSADO", Color.ORANGE);
+        } else {
+            if (countdown != null) countdown.start();
+            if (autoAdvanceTimer != null && exerciseDone) autoAdvanceTimer.start();
+            txtInput.setEnabled(true);
+            txtInput.requestFocus();
+            setFeedback("", COLOR_SUCCESS);
+        }
+        isProcessingPause = false;
+    }
 
     // -------- Estado do Modelo --------
     private Player player;
@@ -102,6 +130,8 @@ public class GamePanel extends BasePanel {
         bar.setLayout(new BorderLayout(25, 0));
         bar.setBorder(BorderFactory.createEmptyBorder(8, 40, 8, 40));
 
+
+
         JPanel left = new JPanel(new GridLayout(2, 1, 0, 1));
         left.setOpaque(false);
         lblPlayerName = label("Jogador",        FONT_INFO,  Color.WHITE,             SwingConstants.LEFT);
@@ -111,17 +141,24 @@ public class GamePanel extends BasePanel {
 
         lblLives = label("\u2764 \u2764 \u2764", FONT_HEARTS, new Color(255,110,110), SwingConstants.CENTER);
 
-        JPanel right = new JPanel(new GridLayout(2, 1, 0, 1));
+        JPanel right = new JPanel(new GridLayout(3, 1, 0, 2));
         right.setOpaque(false);
         lblScore = label("0 pts", FONT_INFO,      COLOR_GOLD,  SwingConstants.RIGHT);
         lblTimer = label("--s",   FONT_TIMER_BIG, Color.WHITE, SwingConstants.RIGHT);
+
+        btnPause = createModernButton("Pausar", new Color(255, 255, 255, 50));
+        btnPause.setForeground(Color.WHITE);
+        btnPause.addActionListener(e -> pausarJogo());
+
         right.add(lblScore);
         right.add(lblTimer);
+        right.add(btnPause);
 
         bar.add(left,     BorderLayout.WEST);
         bar.add(lblLives, BorderLayout.CENTER);
         bar.add(right,    BorderLayout.EAST);
         return bar;
+
     }
 
     // ================================================================
@@ -264,8 +301,11 @@ public class GamePanel extends BasePanel {
         //  (evita o bug de voltar ao menu com espaço)
         // ----------------------------------------------------------------
         txtInput.addKeyListener(new KeyAdapter() {
+
             @Override
             public void keyPressed(KeyEvent e) {
+                if (paused) return;
+
                 if (exerciseDone && e.getKeyCode() == KeyEvent.VK_ENTER) {
                     e.consume();   // consome antes de qualquer outra ação
                     advanceNow();
@@ -273,6 +313,7 @@ public class GamePanel extends BasePanel {
             }
             @Override
             public void keyReleased(KeyEvent e) {
+                if (paused) return;
                 if (exerciseDone) return;  // bloqueia digitação após concluir
                 if (active) onInput();
             }
