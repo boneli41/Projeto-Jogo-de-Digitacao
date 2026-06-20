@@ -14,7 +14,7 @@ import java.util.List;
 
 public class ExerciseFactory {
 
-    private static final int EXERCISES_PER_SESSION = 1;
+    private static final int EXERCISES_PER_SESSION = 8;
 
     private static List<String> loadPhrases(String filePath) {
 

@@ -14,8 +14,8 @@ public class TypingGame extends JFrame {
     public static final String PANEL_GAME   = "GAME";
     public static final String PANEL_RESULT = "RESULT";
 
-    private final CardLayout cardLayout;
-    private final JPanel     container;
+    private final CardLayout  cardLayout;
+    private final JPanel      container;
 
     private final MenuPanel   menuPanel;
     private final GamePanel   gamePanel;
@@ -44,13 +44,19 @@ public class TypingGame extends JFrame {
         show(PANEL_MENU);
     }
 
-    private void show(String name) {
-        cardLayout.show(container, name);
+    private void show(String name) { cardLayout.show(container, name); }
+
+    // ----------------------------------------------------------------
+    // Inicia o jogo num módulo específico (escolha livre do menu)
+    // ----------------------------------------------------------------
+    public void startGame(Player player, int campaignLevel) {
+        gamePanel.startGame(player, campaignLevel);
+        show(PANEL_GAME);
     }
 
+    // Mantém compatibilidade: sem escolha = começa no nível 1
     public void startGame(Player player) {
-        gamePanel.startGame(player);
-        show(PANEL_GAME);
+        startGame(player, 1);
     }
 
     public void showResult(Player player, int stars, int xpEarned,
@@ -66,13 +72,10 @@ public class TypingGame extends JFrame {
     }
 
     public void continueGame() {
-       if(gamePanel.nextExercise()) {
-           show(PANEL_GAME);
-       }
+        if (gamePanel.nextExercise()) show(PANEL_GAME);
     }
 
     public void returnToMenu() {
-        // Atualiza o ranking no menu antes de exibir
         menuPanel.refreshRanking();
         show(PANEL_MENU);
     }
