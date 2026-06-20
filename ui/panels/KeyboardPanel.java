@@ -30,20 +30,25 @@ public class KeyboardPanel extends JPanel {
     //  Estrutura de uma tecla
     // ----------------------------------------------------------------
     private static class Key {
-        String label;        // texto principal exibido
-        String shiftLabel;   // texto secundário (shift)
-        float  x, y, w, h;  // posição/tamanho em unidades de célula
-        boolean isSpecial;   // backspace, tab, caps, shift, enter, etc.
+        String label;        // texto principal exibido (caractere produzido SEM shift)
+        String shiftLabel;   // texto secundário (caractere produzido COM shift)
+        float  x, y, w, h;
+        boolean isSpecial;
+        boolean isDeadKey;   // tecla-morta de acento (´ ` ~ ^)
 
-        // Estado de pintura (calculado por highlightForText)
-        boolean highlightNormal; // precisa dessa tecla sem shift
-        boolean highlightShift;  // precisa com shift
-        boolean highlightCaps;   // precisa de capslock
+        boolean highlightNormal;
+        boolean highlightShift;
+        boolean highlightCaps;
 
         Key(String label, String shiftLabel, float x, float y, float w, float h, boolean isSpecial) {
+            this(label, shiftLabel, x, y, w, h, isSpecial, false);
+        }
+
+        Key(String label, String shiftLabel, float x, float y, float w, float h, boolean isSpecial, boolean isDeadKey) {
             this.label = label; this.shiftLabel = shiftLabel;
             this.x = x; this.y = y; this.w = w; this.h = h;
             this.isSpecial = isSpecial;
+            this.isDeadKey = isDeadKey;
         }
     }
 
@@ -52,10 +57,13 @@ public class KeyboardPanel extends JPanel {
     // ----------------------------------------------------------------
     private static final Key[] KEYS;
 
+    // Índices das teclas-mortas de acento, guardados para o highlight de letras acentuadas
+    private static int idxAcuteGrave = -1;  // tecla ´ `  (agudo / grave)
+    private static int idxTildeCirc  = -1;  // tecla ~ ^  (til / circunflexo)
+    private static int idxTrema      = -1;  // tecla 6 ¨  (trema, raramente usado em pt-BR)
+
     static {
-        // Cada "unidade" = KEY_UNIT px (calculado em paint).
-        // Linhas: y=0 (números), y=1 (QWERTY), y=2 (ASDF), y=3 (ZXCV), y=4 (barra de espaço)
-        float U = 1f; // alias legível
+        float U = 1f;
         KEYS = new Key[]{
                 // ------- Linha 0: números -------
                 new Key("'","\"",  0,0, U,U, false),
@@ -64,67 +72,67 @@ public class KeyboardPanel extends JPanel {
                 new Key("3","#",   3,0, U,U, false),
                 new Key("4","$",   4,0, U,U, false),
                 new Key("5","%",   5,0, U,U, false),
-                new Key("6","¨",   6,0, U,U, false),
+                new Key("6","¨",   6,0, U,U, false),   // ¨ é tecla-morta de trema (raro em pt-BR)
                 new Key("7","&",   7,0, U,U, false),
                 new Key("8","*",   8,0, U,U, false),
                 new Key("9","(",   9,0, U,U, false),
                 new Key("0",")",  10,0, U,U, false),
                 new Key("-","_",  11,0, U,U, false),
                 new Key("=","+",  12,0, U,U, false),
-                new Key("⌫","",   13,0, 2f,U, true),   // Backspace
+                new Key("⌫","",   13,0, 2f,U, true),
 
                 // ------- Linha 1: QWERTY -------
                 new Key("Tab","",  0,1, 1.5f,U, true),
-                new Key("Q","",   1.5f,1, U,U, false),
-                new Key("W","",   2.5f,1, U,U, false),
-                new Key("E","",   3.5f,1, U,U, false),
-                new Key("R","",   4.5f,1, U,U, false),
-                new Key("T","",   5.5f,1, U,U, false),
-                new Key("Y","",   6.5f,1, U,U, false),
-                new Key("U","",   7.5f,1, U,U, false),
-                new Key("I","",   8.5f,1, U,U, false),
-                new Key("O","",   9.5f,1, U,U, false),
-                new Key("P","",  10.5f,1, U,U, false),
-                new Key("´","`", 11.5f,1, U,U, false),
-                new Key("[","{", 12.5f,1, U,U, false),
-                new Key("↵","",  13.5f,1, 1.5f,2f, true),  // Enter — 2 linhas de altura
+                new Key("q","Q",   1.5f,1, U,U, false),
+                new Key("w","W",   2.5f,1, U,U, false),
+                new Key("e","E",   3.5f,1, U,U, false),
+                new Key("r","R",   4.5f,1, U,U, false),
+                new Key("t","T",   5.5f,1, U,U, false),
+                new Key("y","Y",   6.5f,1, U,U, false),
+                new Key("u","U",   7.5f,1, U,U, false),
+                new Key("i","I",   8.5f,1, U,U, false),
+                new Key("o","O",   9.5f,1, U,U, false),
+                new Key("p","P",  10.5f,1, U,U, false),
+                new Key("´","`",  11.5f,1, U,U, false, true),  // tecla-morta agudo/grave
+                new Key("[","{",  12.5f,1, U,U, false),
+                new Key("↵","",   13.5f,1, 1.5f,2f, true),
 
                 // ------- Linha 2: ASDF -------
                 new Key("Caps","",  0,2, 1.8f,U, true),
-                new Key("A","",   1.8f,2, U,U, false),
-                new Key("S","",   2.8f,2, U,U, false),
-                new Key("D","",   3.8f,2, U,U, false),
-                new Key("F","",   4.8f,2, U,U, false),
-                new Key("G","",   5.8f,2, U,U, false),
-                new Key("H","",   6.8f,2, U,U, false),
-                new Key("J","",   7.8f,2, U,U, false),
-                new Key("K","",   8.8f,2, U,U, false),
-                new Key("L","",   9.8f,2, U,U, false),
-                new Key("Ç","",  10.8f,2, U,U, false),
-                new Key("~","^", 11.8f,2, U,U, false),
+                new Key("a","A",   1.8f,2, U,U, false),
+                new Key("s","S",   2.8f,2, U,U, false),
+                new Key("d","D",   3.8f,2, U,U, false),
+                new Key("f","F",   4.8f,2, U,U, false),
+                new Key("g","G",   5.8f,2, U,U, false),
+                new Key("h","H",   6.8f,2, U,U, false),
+                new Key("j","J",   7.8f,2, U,U, false),
+                new Key("k","K",   8.8f,2, U,U, false),
+                new Key("l","L",   9.8f,2, U,U, false),
+                new Key("ç","Ç",  10.8f,2, U,U, false),       // ç é tecla normal; Ç precisa de Shift
+                new Key("~","^",  11.8f,2, U,U, false, true), // tecla-morta til/circunflexo
                 new Key("]","}",  12.8f,2, U,U, false),
 
                 // ------- Linha 3: ZXCV -------
-                new Key("⇧","",   0,3, 1.3f,U, true),   // Shift esquerdo
-                new Key("|","\\",  1.3f,3, U,U, false),
-                new Key("Z","",   2.3f,3, U,U, false),
-                new Key("X","",   3.3f,3, U,U, false),
-                new Key("C","",   4.3f,3, U,U, false),
-                new Key("V","",   5.3f,3, U,U, false),
-                new Key("B","",   6.3f,3, U,U, false),
-                new Key("N","",   7.3f,3, U,U, false),
-                new Key("M","",   8.3f,3, U,U, false),
+                new Key("⇧","",   0,3, 1.3f,U, true),
+                new Key("\\","|",  1.3f,3, U,U, false),
+                new Key("z","Z",   2.3f,3, U,U, false),
+                new Key("x","X",   3.3f,3, U,U, false),
+                new Key("c","C",   4.3f,3, U,U, false),
+                new Key("v","V",   5.3f,3, U,U, false),
+                new Key("b","B",   6.3f,3, U,U, false),
+                new Key("n","N",   7.3f,3, U,U, false),
+                new Key("m","M",   8.3f,3, U,U, false),
                 new Key(",","<",  9.3f,3, U,U, false),
                 new Key(".",">" , 10.3f,3, U,U, false),
                 new Key(";",":",  11.3f,3, U,U, false),
                 new Key("/","?",  12.3f,3, U,U, false),
-                new Key("⇧","",  13.3f,3, 1.7f,U, true), // Shift direito
+                new Key("⇧","",  13.3f,3, 1.7f,U, true),
 
                 // ------- Linha 4: espaço -------
                 new Key("Ctrl","",  0,4, 1.3f,U, true),
                 new Key("Win","",  1.3f,4, 1.2f,U, true),
                 new Key("Alt","",  2.5f,4, 1.2f,U, true),
-                new Key("",   "",  3.7f,4, 6.3f,U, false),  // Espaço
+                new Key("",   "",  3.7f,4, 6.3f,U, false),
                 new Key("AltGr","",10.0f,4, 1.2f,U, true),
                 new Key("Win","",  11.2f,4,1.0f,U, true),
                 new Key("Menu","",12.2f,4,0.9f,U, true),
@@ -135,14 +143,23 @@ public class KeyboardPanel extends JPanel {
     // ----------------------------------------------------------------
     //  Mapeamento caractere → índice de tecla
     // ----------------------------------------------------------------
-    // Preenchido no construtor
     private final java.util.Map<Character, Integer> charToKeyIndex = new java.util.HashMap<>();
-    // Caracteres que precisam de Shift
     private final Set<Character> needsShift = new HashSet<>();
-    // Caracteres que precisam de CapsLock (letras maiúsculas A-Z)
-    private final Set<Character> needsCaps  = new HashSet<>();
 
-    // Índices de teclas especiais de modificador
+    // Conjuntos de letras acentuadas por tecla-morta (pt-BR)
+    // Agudo (´): á é í ó ú  | Á É Í Ó Ú (com shift na letra)
+    // Grave (`): à (raro em pt-BR moderno, mas existe)
+    // Til (~):   ã õ | Ã Õ
+    // Circunflexo (^): â ê î ô û | Â Ê Î Ô Û
+    private static final String ACUTE_LOWER = "áéíóú";
+    private static final String ACUTE_UPPER = "ÁÉÍÓÚ";
+    private static final String GRAVE_LOWER = "à";
+    private static final String GRAVE_UPPER = "À";
+    private static final String TILDE_LOWER = "ãõ";
+    private static final String TILDE_UPPER = "ÃÕ";
+    private static final String CIRC_LOWER  = "âêîôû";
+    private static final String CIRC_UPPER  = "ÂÊÎÔÛ";
+
     private int idxShiftL = -1, idxShiftR = -1, idxCaps = -1;
 
     public KeyboardPanel() {
@@ -155,7 +172,6 @@ public class KeyboardPanel extends JPanel {
         for (int i = 0; i < KEYS.length; i++) {
             Key k = KEYS[i];
 
-            // Guarda índices dos modificadores
             if (k.isSpecial) {
                 if (k.label.equals("⇧") && idxShiftL < 0) idxShiftL = i;
                 else if (k.label.equals("⇧"))              idxShiftR = i;
@@ -163,28 +179,20 @@ public class KeyboardPanel extends JPanel {
                 continue;
             }
 
-            // Tecla normal: label é o caractere sem shift
+            // Marca as teclas-mortas de acento para uso posterior
+            if (k.isDeadKey) {
+                if (k.label.equals("´")) idxAcuteGrave = i;       // ´ / `
+                if (k.label.equals("~")) idxTildeCirc  = i;       // ~ / ^
+                continue; // tecla-morta não produz caractere sozinha — não mapeia direto
+            }
+
+            // label = caractere produzido SEM shift
             if (!k.label.isEmpty()) {
                 char c = k.label.charAt(0);
                 charToKeyIndex.put(c, i);
-
-                // As teclas de letras são definidas com maiúscula ("A","Q"...),
-                // mas sem shift produzem minúscula. Mapeia os dois sentidos:
-                // maiúscula → mesma tecla + needsShift
-                // minúscula → mesma tecla (sem shift)
-                if (c >= 'A' && c <= 'Z') {
-                    char lower = Character.toLowerCase(c);
-                    charToKeyIndex.put(lower, i);       // minúscula = tecla normal
-                    charToKeyIndex.put(c, i);            // maiúscula = mesma tecla
-                    needsShift.add(c);                   // maiúscula requer Shift
-                } else if (c >= 'a' && c <= 'z') {
-                    char upper = Character.toUpperCase(c);
-                    charToKeyIndex.put(upper, i);
-                    needsShift.add(upper);
-                }
             }
 
-            // shiftLabel = caractere com Shift pressionado
+            // shiftLabel = caractere produzido COM shift
             if (!k.shiftLabel.isEmpty()) {
                 char c = k.shiftLabel.charAt(0);
                 charToKeyIndex.put(c, i);
@@ -192,12 +200,42 @@ public class KeyboardPanel extends JPanel {
             }
         }
 
-        // Espaço: tecla com label="" e largura > 4 na linha 4
+        // Tecla "6" também é tecla-morta de trema (raro, mas existe em pt-BR antigo)
+        // não usado ativamente aqui, mantido apenas como nota.
+
+        // Espaço
         for (int i = 0; i < KEYS.length; i++) {
             if (KEYS[i].y == 4 && KEYS[i].w > 4) {
                 charToKeyIndex.put(' ', i);
                 break;
             }
+        }
+
+        // ------------------------------------------------------------
+        //  Mapeia as letras acentuadas para a tecla-morta correspondente
+        //  + a tecla da letra base (ex: 'á' precisa de ´ e depois 'a')
+        // ------------------------------------------------------------
+        mapAccentGroup(ACUTE_LOWER, idxAcuteGrave, false);
+        mapAccentGroup(ACUTE_UPPER, idxAcuteGrave, true);
+        mapAccentGroup(GRAVE_LOWER, idxAcuteGrave, false); // mesma tecla física, posição shift
+        mapAccentGroup(GRAVE_UPPER, idxAcuteGrave, true);
+        mapAccentGroup(TILDE_LOWER, idxTildeCirc, false);
+        mapAccentGroup(TILDE_UPPER, idxTildeCirc, true);
+        mapAccentGroup(CIRC_LOWER, idxTildeCirc, false);
+        mapAccentGroup(CIRC_UPPER, idxTildeCirc, true);
+    }
+
+    /**
+     * Para cada letra acentuada do grupo, registra que ela "pertence"
+     * à tecla-morta informada (para fins de destaque no teclado).
+     * A letra acentuada em si não tem uma tecla própria — destacamos
+     * a tecla-morta E a tecla da letra-base correspondente.
+     */
+    private void mapAccentGroup(String chars, int deadKeyIdx, boolean shiftNeeded) {
+        if (deadKeyIdx < 0) return;
+        for (char c : chars.toCharArray()) {
+            charToKeyIndex.put(c, deadKeyIdx);
+            if (shiftNeeded) needsShift.add(c);
         }
     }
 
@@ -205,14 +243,11 @@ public class KeyboardPanel extends JPanel {
     //  API pública: pintar teclas para uma frase
     // ----------------------------------------------------------------
     public void highlightForText(String text) {
-        // Limpa estado anterior
         for (Key k : KEYS) {
             k.highlightNormal = false;
             k.highlightShift  = false;
             k.highlightCaps   = false;
         }
-
-        boolean hasCaps = false;
 
         for (char c : text.toCharArray()) {
             if (c == '\n' || c == '\r') continue;
@@ -224,18 +259,52 @@ public class KeyboardPanel extends JPanel {
 
             if (needsShift.contains(c)) {
                 k.highlightShift = true;
-                // Marca os dois shifts
                 if (idxShiftL >= 0) KEYS[idxShiftL].highlightShift = true;
                 if (idxShiftR >= 0) KEYS[idxShiftR].highlightShift = true;
             } else {
                 k.highlightNormal = true;
             }
+
+            // Se a letra é acentuada, também destaca a tecla da letra-base
+            // (ex: para 'á', destaca também a tecla 'a')
+            char base = removeAccent(c);
+            if (base != c) {
+                Integer baseIdx = charToKeyIndex.get(Character.isUpperCase(c) ? Character.toUpperCase(base) : base);
+                // Quando a letra é minúscula acentuada, a base é a tecla normal (sem shift)
+                // Quando é maiúscula acentuada, a base também precisa de shift
+                char baseLookup = Character.isUpperCase(c) ? Character.toUpperCase(base) : base;
+                baseIdx = charToKeyIndex.get(baseLookup);
+                if (baseIdx != null && baseIdx != idx) {
+                    Key bk = KEYS[baseIdx];
+                    if (needsShift.contains(baseLookup)) {
+                        bk.highlightShift = true;
+                        if (idxShiftL >= 0) KEYS[idxShiftL].highlightShift = true;
+                        if (idxShiftR >= 0) KEYS[idxShiftR].highlightShift = true;
+                    } else {
+                        bk.highlightNormal = true;
+                    }
+                }
+            }
         }
 
-        // Se há maiúsculas — poderia ser CapsLock, mas deixamos Shift por padrão
-        // (mais comum e mais simples para o usuário idoso)
-
         repaint();
+    }
+
+    /** Remove o acento de uma letra para achar a tecla-base (á → a, Ê → E, etc.) */
+    private char removeAccent(char c) {
+        switch (c) {
+            case 'á': case 'à': case 'â': case 'ã': return 'a';
+            case 'Á': case 'À': case 'Â': case 'Ã': return 'A';
+            case 'é': case 'ê': return 'e';
+            case 'É': case 'Ê': return 'E';
+            case 'í': case 'î': return 'i';
+            case 'Í': case 'Î': return 'I';
+            case 'ó': case 'ô': case 'õ': return 'o';
+            case 'Ó': case 'Ô': case 'Õ': return 'O';
+            case 'ú': case 'û': return 'u';
+            case 'Ú': case 'Û': return 'U';
+            default: return c;
+        }
     }
 
     // ----------------------------------------------------------------
@@ -248,11 +317,10 @@ public class KeyboardPanel extends JPanel {
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,   RenderingHints.VALUE_ANTIALIAS_ON);
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
-        // Calcula unidade de célula para caber na largura disponível
-        float totalUnits = 15f;  // largura total do teclado em unidades
+        float totalUnits = 15f;
         int   padding    = 6;
         float unit       = (getWidth() - padding * 2) / totalUnits;
-        float keyH       = (getHeight() - padding * 2 - 4 * 3) / 5f; // 5 linhas, 3px gap
+        float keyH       = (getHeight() - padding * 2 - 4 * 3) / 5f;
         float gap        = 2f;
         int   arc        = 6;
 
@@ -266,7 +334,6 @@ public class KeyboardPanel extends JPanel {
             float pw = k.w * unit - gap * 2;
             float ph = k.h * keyH + (k.h > 1 ? (k.h - 1) * 3 : 0) - gap * 2;
 
-            // Cor de fundo
             Color bg, fg;
             if (k.highlightShift) {
                 bg = COL_SHIFT_BG; fg = COL_SHIFT_FG;
@@ -274,49 +341,38 @@ public class KeyboardPanel extends JPanel {
                 bg = COL_CAPS_BG;  fg = COL_CAPS_FG;
             } else if (k.highlightNormal) {
                 bg = COL_HIGHLIGHT_BG; fg = COL_HIGHLIGHT_FG;
-            } else if (k.isSpecial) {
+            } else if (k.isSpecial || k.isDeadKey) {
                 bg = COL_SPECIAL_BG;   fg = COL_KEY_FG;
             } else {
                 bg = COL_KEY_BG;       fg = COL_KEY_FG;
             }
 
-            // Sombra
             g2.setColor(new Color(0, 0, 0, 30));
             g2.fillRoundRect((int)px + 1, (int)py + 2, (int)pw, (int)ph, arc, arc);
 
-            // Corpo
             g2.setColor(bg);
             g2.fillRoundRect((int)px, (int)py, (int)pw, (int)ph, arc, arc);
 
-            // Borda
             g2.setColor(k.highlightNormal || k.highlightShift
                     ? COL_HIGHLIGHT_BG.darker()
                     : COL_KEY_BORDER);
             g2.drawRoundRect((int)px, (int)py, (int)pw, (int)ph, arc, arc);
 
-            // Texto principal
             g2.setColor(fg);
             g2.setFont(k.isSpecial ? fontSpecial : fontNormal);
             drawCentered(g2, k.label, (int)px, (int)py, (int)pw, (int)ph);
 
-            // Texto shift (canto superior esquerdo, menor)
             if (!k.shiftLabel.isEmpty() && !k.isSpecial) {
                 g2.setColor(new Color(fg.getRed(), fg.getGreen(), fg.getBlue(), 160));
                 g2.setFont(fontShift);
                 FontMetrics fm = g2.getFontMetrics();
-                g2.drawString(k.shiftLabel,
-                        (int)px + 3,
-                        (int)py + fm.getAscent() + 1);
+                g2.drawString(k.shiftLabel, (int)px + 3, (int)py + fm.getAscent() + 1);
             }
         }
 
-        // Legenda
         g2.setFont(new Font("Poppins", Font.PLAIN, 10));
-
-        drawLegendItem(g2, COL_HIGHLIGHT_BG, "Tecla normal",
-                padding, getHeight() - 14);
-        drawLegendItem(g2, COL_SHIFT_BG,     "Shift necessário",
-                padding + 120, getHeight() - 14);
+        drawLegendItem(g2, COL_HIGHLIGHT_BG, "Tecla normal", padding, getHeight() - 14);
+        drawLegendItem(g2, COL_SHIFT_BG,     "Shift necessário", padding + 120, getHeight() - 14);
 
         g2.dispose();
     }

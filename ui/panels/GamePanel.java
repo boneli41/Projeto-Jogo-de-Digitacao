@@ -28,12 +28,10 @@ public class GamePanel extends BasePanel {
 
         if (paused) {
             if (countdown != null) countdown.stop();
-            if (autoAdvanceTimer != null) autoAdvanceTimer.stop();
             txtInput.setEnabled(false);
             setFeedback("JOGO PAUSADO", Color.ORANGE);
         } else {
             if (countdown != null) countdown.start();
-            if (autoAdvanceTimer != null && exerciseDone) autoAdvanceTimer.start();
             txtInput.setEnabled(true);
             txtInput.requestFocus();
             setFeedback("", COLOR_SUCCESS);
@@ -50,11 +48,6 @@ public class GamePanel extends BasePanel {
     private long startTime;
     private int timeLeft;
 
-    // -------- Controle de auto-avançar --------
-    private Timer autoAdvanceTimer;
-    private boolean exerciseDone;
-    private int pendingStars, pendingXp, pendingWpm, pendingTime;
-
     // -------- Barra superior --------
     private JLabel lblPlayerName;
     private JLabel lblLevel;
@@ -63,11 +56,10 @@ public class GamePanel extends BasePanel {
     private JLabel lblTimer;
 
     // -------- Barra lateral --------
-    private JLabel lblSideXP;
-    private JLabel lblSideLevel;
+    private JLabel lblSideScore;
     private JLabel lblSideStreak;
-    private JLabel lblNextLevelHint;
-    private JProgressBar xpBar;
+    private JLabel lblSideExercise;
+    private JLabel lblCategoryHint;     // mostra a categoria atual + progresso dentro dela
 
     // -------- Centro --------
     private JLabel lblCategory;
@@ -75,9 +67,7 @@ public class GamePanel extends BasePanel {
     private JTextPane txtExercise;
     private JTextField txtInput;
     private JLabel lblFeedback;
-    private JLabel lblAutoAdvance;
-    private KeyboardPanel keyboardPanel;   // ← teclado visual
-    private JButton btnAdvance;            // ← botão "Avançar" visível após concluir
+    private KeyboardPanel keyboardPanel;
 
     // -------- Rodapé --------
     private JProgressBar progressBar;
@@ -94,8 +84,8 @@ public class GamePanel extends BasePanel {
     private static final Color COL_CURSOR_BG  = new Color(180, 220, 255);
     private static final Color COL_NORMAL_FG  = new Color( 60,  60,  60);
 
-    private static final Font FONT_EXERCISE_BIG = new Font("Nunito Sans", Font.PLAIN, 36);
-    private static final Font FONT_INPUT_BIG    = new Font("Poppins",     Font.PLAIN, 28);
+    private static final Font FONT_EXERCISE_BIG = new Font("Nunito Sans", Font.PLAIN, 32);
+    private static final Font FONT_INPUT_BIG    = new Font("Poppins",     Font.PLAIN, 26);
 
     public GamePanel(TypingGame game) {
         super(game);
@@ -130,12 +120,10 @@ public class GamePanel extends BasePanel {
         bar.setLayout(new BorderLayout(25, 0));
         bar.setBorder(BorderFactory.createEmptyBorder(8, 40, 8, 40));
 
-
-
         JPanel left = new JPanel(new GridLayout(2, 1, 0, 1));
         left.setOpaque(false);
         lblPlayerName = label("Jogador",        FONT_INFO,  Color.WHITE,             SwingConstants.LEFT);
-        lblLevel      = label("Nível 1 — Iniciante", FONT_SMALL, new Color(200,225,255), SwingConstants.LEFT);
+        lblLevel      = label("Categoria",      FONT_SMALL, new Color(200,225,255), SwingConstants.LEFT);
         left.add(lblPlayerName);
         left.add(lblLevel);
 
@@ -158,11 +146,10 @@ public class GamePanel extends BasePanel {
         bar.add(lblLives, BorderLayout.CENTER);
         bar.add(right,    BorderLayout.EAST);
         return bar;
-
     }
 
     // ================================================================
-    //  Barra Lateral
+    //  Barra Lateral (sem XP — mostra pontuação, sequência e progresso de categoria)
     // ================================================================
     private JPanel buildSidebar() {
         JPanel side = new JPanel();
@@ -176,36 +163,26 @@ public class GamePanel extends BasePanel {
 
         side.add(title);
         side.add(Box.createVerticalStrut(20));
-        side.add(sidebarCard("Pontos XP",
-                lblSideXP     = label("0",  FONT_SUBTITLE, Color.WHITE, SwingConstants.CENTER), COLOR_ACCENT));
+        side.add(sidebarCard("Pontuação",
+                lblSideScore    = label("0",  FONT_SUBTITLE, Color.WHITE, SwingConstants.CENTER), COLOR_ACCENT));
         side.add(Box.createVerticalStrut(15));
         side.add(sidebarCard("Sequência",
-                lblSideStreak = label("0x", FONT_SUBTITLE, Color.WHITE, SwingConstants.CENTER), COLOR_ACCENT));
+                lblSideStreak   = label("0x", FONT_SUBTITLE, Color.WHITE, SwingConstants.CENTER), COLOR_ACCENT));
         side.add(Box.createVerticalStrut(15));
         side.add(sidebarCard("Exercício",
-                lblSideLevel  = label("1",  FONT_SUBTITLE, Color.WHITE, SwingConstants.CENTER), COLOR_ACCENT));
+                lblSideExercise = label("1",  FONT_SUBTITLE, Color.WHITE, SwingConstants.CENTER), COLOR_ACCENT));
         side.add(Box.createVerticalStrut(20));
 
-        // Card XP com barra de progresso
-        RoundedPanel xpCard = new RoundedPanel(20, COLOR_ACCENT);
-        xpCard.setLayout(new BoxLayout(xpCard, BoxLayout.Y_AXIS));
-        xpCard.setBorder(BorderFactory.createEmptyBorder(10, 12, 10, 12));
-        xpCard.setMaximumSize(new Dimension(210, 80));
+        // Card de progresso da categoria atual (substitui o antigo card de XP)
+        RoundedPanel catCard = new RoundedPanel(20, COLOR_ACCENT);
+        catCard.setLayout(new BoxLayout(catCard, BoxLayout.Y_AXIS));
+        catCard.setBorder(BorderFactory.createEmptyBorder(10, 12, 10, 12));
+        catCard.setMaximumSize(new Dimension(210, 60));
 
-        lblNextLevelHint = label("Nível 1 → 2", FONT_SMALL, Color.WHITE, SwingConstants.CENTER);
-        lblNextLevelHint.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        xpBar = new JProgressBar(0, 100);
-        xpBar.setValue(0);
-        xpBar.setForeground(COLOR_GOLD);
-        xpBar.setBackground(new Color(255, 255, 255, 60));
-        xpBar.setBorderPainted(false);
-        xpBar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 14));
-
-        xpCard.add(lblNextLevelHint);
-        xpCard.add(Box.createVerticalStrut(6));
-        xpCard.add(xpBar);
-        side.add(xpCard);
+        lblCategoryHint = label("Categoria: --", FONT_SMALL, Color.WHITE, SwingConstants.CENTER);
+        lblCategoryHint.setAlignmentX(Component.CENTER_ALIGNMENT);
+        catCard.add(lblCategoryHint);
+        side.add(catCard);
 
         return side;
     }
@@ -223,12 +200,12 @@ public class GamePanel extends BasePanel {
     //  Área Central
     // ================================================================
     private JPanel buildCenter() {
-        JPanel center = new JPanel(new BorderLayout(0, 8));
+        JPanel center = new JPanel(new BorderLayout(0, 6));
         center.setOpaque(false);
-        center.setBorder(BorderFactory.createEmptyBorder(14, 40, 20, 20));
+        center.setBorder(BorderFactory.createEmptyBorder(12, 40, 18, 20));
 
         // --- Topo: categoria + instruções ---
-        JPanel infoRow = new JPanel(new GridLayout(2, 1, 0, 4));
+        JPanel infoRow = new JPanel(new GridLayout(2, 1, 0, 3));
         infoRow.setOpaque(false);
         lblCategory     = label("Categoria",  FONT_INFO,  COLOR_PRIMARY,          SwingConstants.CENTER);
         lblInstructions = label("Instruções", FONT_SMALL, new Color(80, 80, 80),   SwingConstants.CENTER);
@@ -236,50 +213,38 @@ public class GamePanel extends BasePanel {
         infoRow.add(lblInstructions);
         center.add(infoRow, BorderLayout.NORTH);
 
-        // --- Centro: cartão do exercício ---
+        // --- Centro: cartão do exercício (REDUZIDO em altura para abrir espaço pro teclado) ---
         RoundedPanel card = new RoundedPanel(40, Color.WHITE);
         card.setLayout(new BorderLayout());
-        card.setBorder(BorderFactory.createEmptyBorder(24, 40, 16, 40));
+        card.setBorder(BorderFactory.createEmptyBorder(14, 40, 8, 40));
 
         txtExercise = new JTextPane();
         txtExercise.setEditable(false);
         txtExercise.setFont(FONT_EXERCISE_BIG);
         txtExercise.setBackground(COLOR_WHITE);
         txtExercise.setFocusable(false);
-        txtExercise.setPreferredSize(new Dimension(0, 130));
+        // Altura reduzida de 130 para 88 — "puxa pra cima" como pedido
+        txtExercise.setPreferredSize(new Dimension(0, 88));
 
-        lblFeedback = label(" ", new Font("Nunito Sans", Font.BOLD, 22),
+        lblFeedback = label(" ", new Font("Nunito Sans", Font.BOLD, 20),
                 COLOR_SUCCESS, SwingConstants.CENTER);
-        lblFeedback.setBorder(BorderFactory.createEmptyBorder(4, 0, 0, 0));
+        lblFeedback.setBorder(BorderFactory.createEmptyBorder(2, 0, 0, 0));
 
-        // Label do contador de auto-avance
-        lblAutoAdvance = label(" ", new Font("Poppins", Font.PLAIN, 14),
-                COLOR_PRIMARY, SwingConstants.CENTER);
-
-        // Botão Avançar (oculto durante o jogo, aparece ao concluir)
-        btnAdvance = createModernButton("Avançar  ▶", COLOR_SUCCESS);
-        btnAdvance.setFont(new Font("Poppins SemiBold", Font.BOLD, 16));
-        btnAdvance.setPreferredSize(new Dimension(200, 40));
-        btnAdvance.setVisible(false);
-        btnAdvance.addActionListener(e -> advanceNow());
-
-        JPanel cardSouth = new JPanel(new FlowLayout(FlowLayout.CENTER, 12, 0));
+        JPanel cardSouth = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
         cardSouth.setOpaque(false);
         cardSouth.add(lblFeedback);
-        cardSouth.add(lblAutoAdvance);
-        cardSouth.add(btnAdvance);
 
         card.add(txtExercise, BorderLayout.CENTER);
         card.add(cardSouth,   BorderLayout.SOUTH);
         center.add(card, BorderLayout.CENTER);
 
-        // --- Sul: teclado + campo de digitação ---
+        // --- Sul: teclado (AUMENTADO) + campo de digitação ---
         JPanel southSection = new JPanel(new BorderLayout(0, 6));
         southSection.setOpaque(false);
 
-        // Teclado visual
+        // Teclado visual — altura aumentada de 115 para 150
         keyboardPanel = new KeyboardPanel();
-        keyboardPanel.setPreferredSize(new Dimension(0, 115));
+        keyboardPanel.setPreferredSize(new Dimension(0, 150));
         southSection.add(keyboardPanel, BorderLayout.CENTER);
 
         // Linha de digitação
@@ -288,43 +253,21 @@ public class GamePanel extends BasePanel {
         inputRow.setBorder(BorderFactory.createEmptyBorder(4, 0, 0, 0));
 
         JLabel promptLabel = label("Digite aqui:  ", FONT_BODY, COLOR_TEXT, SwingConstants.LEFT);
-        promptLabel.setPreferredSize(new Dimension(165, 60));
+        promptLabel.setPreferredSize(new Dimension(165, 56));
 
         txtInput = new JTextField();
         txtInput.setFont(FONT_INPUT_BIG);
-        txtInput.setPreferredSize(new Dimension(0, 60));
+        txtInput.setPreferredSize(new Dimension(0, 56));
         txtInput.putClientProperty("JTextField.placeholderText", "Comece a digitar aqui...");
         txtInput.putClientProperty("JComponent.roundRect", true);
 
-        // ----------------------------------------------------------------
-        //  KeyListener: Enter avança, Espaço só avança se exerciseDone
-        //  (evita o bug de voltar ao menu com espaço)
-        // ----------------------------------------------------------------
+        // Ao concluir a frase, vai direto pra tela de resultado (sem espera local aqui).
+        // Espaço nunca aciona nada de navegação — só digitação normal.
         txtInput.addKeyListener(new KeyAdapter() {
-
-            @Override
-            public void keyPressed(KeyEvent e) {
-                if (paused) return;
-
-                if (exerciseDone && e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    e.consume();   // consome antes de qualquer outra ação
-                    advanceNow();
-                }
-            }
             @Override
             public void keyReleased(KeyEvent e) {
                 if (paused) return;
-                if (exerciseDone) return;  // bloqueia digitação após concluir
                 if (active) onInput();
-            }
-        });
-
-        // Registra Enter também via InputMap para garantir (foco pode variar)
-        txtInput.getInputMap(JComponent.WHEN_FOCUSED)
-                .put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "advanceAction");
-        txtInput.getActionMap().put("advanceAction", new AbstractAction() {
-            @Override public void actionPerformed(ActionEvent e) {
-                if (exerciseDone) advanceNow();
             }
         });
 
@@ -369,9 +312,16 @@ public class GamePanel extends BasePanel {
     // ================================================================
     //  API Pública
     // ================================================================
+
+    /** Inicia a campanha completa, do nível 1 ao 5. */
     public void startGame(Player p) {
+        startGame(p, 1);
+    }
+
+    /** Inicia a partir de um nível específico (1 a 5), seguindo até o final. */
+    public void startGame(Player p, int startLevel) {
         this.player = p;
-        this.exercises = ExerciseFactory.createCampaign();
+        this.exercises = ExerciseFactory.createCampaignFromLevel(startLevel);
         this.exerciseIndex = 0;
         loadExercise();
     }
@@ -392,10 +342,9 @@ public class GamePanel extends BasePanel {
     private void loadExercise() {
         if (exercises == null || exercises.isEmpty()) return;
 
-        current      = exercises.get(exerciseIndex);
-        timeLeft     = current.getTimeLimit();
-        active       = true;
-        exerciseDone = false;
+        current  = exercises.get(exerciseIndex);
+        timeLeft = current.getTimeLimit();
+        active   = true;
 
         startTime = System.currentTimeMillis();
 
@@ -410,15 +359,11 @@ public class GamePanel extends BasePanel {
         txtInput.setText("");
         txtInput.setEnabled(true);
         setFeedback(" ", COLOR_SUCCESS);
-        lblAutoAdvance.setText(" ");
-        btnAdvance.setVisible(false);
         renderTarget("");
 
-        // Atualiza o teclado com as teclas desta frase
         keyboardPanel.highlightForText(current.getTargetText());
 
-        if (autoAdvanceTimer != null && autoAdvanceTimer.isRunning()) autoAdvanceTimer.stop();
-        if (countdown         != null && countdown.isRunning())        countdown.stop();
+        if (countdown != null && countdown.isRunning()) countdown.stop();
 
         countdown = new Timer(1000, e -> tickTimer());
         countdown.start();
@@ -434,7 +379,7 @@ public class GamePanel extends BasePanel {
         lblTimer.setText(timeLeft + "s");
         lblTimer.setForeground(timeLeft <= 10 ? COLOR_DANGER
                 : timeLeft <= 20 ? COLOR_WARNING
-                : Color.WHITE);
+                  : Color.WHITE);
         if (timeLeft <= 0) onTimeUp();
     }
 
@@ -481,7 +426,7 @@ public class GamePanel extends BasePanel {
         int    correct     = countCorrect(typed, target);
         double acc         = (double) correct / target.length();
         int    stars       = current.calculateStars(acc, elapsed);
-        int    xp          = current.calculateScore(correct, target.length(), elapsed);
+        int    points      = current.calculateScore(correct, target.length(), elapsed);
         int    timeSeconds = (int)(elapsed / 1000);
         int    words       = target.trim().split("\\s+").length;
         double minutes     = Math.max(elapsed / 60000.0, 1.0 / 60.0);
@@ -493,66 +438,25 @@ public class GamePanel extends BasePanel {
         else if (stars == 1) { msg = "Bom início! Vai melhorar!";     col = COLOR_WARNING;         }
         else                 { msg = "Tente novamente, não desista!"; col = COLOR_DANGER;          }
 
-        finishExercise(msg, col, stars, xp, wpm, timeSeconds);
+        finishExercise(msg, col, stars, points, wpm, timeSeconds);
     }
 
-    private void finishExercise(String msg, Color col, int stars, int xp, int wpm, int timeSeconds) {
+    private void finishExercise(String msg, Color col, int stars, int points, int wpm, int timeSeconds) {
         active = false;
         if (countdown != null) countdown.stop();
 
-        // NÃO desativa o campo — precisamos que ele receba Enter
         setFeedback(msg, col);
 
         if (stars == 0) player.loseLife();
-        else { player.addXP(xp); player.completeExercise(); }
+        else { player.addScore(points); player.completeExercise(); }
 
         refreshTopBar();
         player.saveToFile("ranking.txt");
 
-        exerciseDone  = true;
-        pendingStars  = stars;
-        pendingXp     = xp;
-        pendingWpm    = wpm;
-        pendingTime   = timeSeconds;
-
-        startAutoAdvance();
-    }
-
-    // ================================================================
-    //  Auto-avançar
-    // ================================================================
-    private void startAutoAdvance() {
-        final int[] secs = {5};
-
-        txtInput.setText("");
-        txtInput.setEnabled(true);   // campo ativo para receber Enter
-
-        btnAdvance.setVisible(true); // botão visível
-        lblAutoAdvance.setText("Próximo em " + secs[0] + "s");
-        lblAutoAdvance.setForeground(COLOR_PRIMARY);
-
-        SwingUtilities.invokeLater(() -> txtInput.requestFocusInWindow());
-
-        autoAdvanceTimer = new Timer(1000, null);
-        autoAdvanceTimer.addActionListener(e -> {
-            secs[0]--;
-            if (secs[0] <= 0) {
-                autoAdvanceTimer.stop();
-                advanceNow();
-            } else {
-                lblAutoAdvance.setText("Próximo em " + secs[0] + "s");
-            }
-        });
-        autoAdvanceTimer.start();
-    }
-
-    private void advanceNow() {
-        if (autoAdvanceTimer != null && autoAdvanceTimer.isRunning()) autoAdvanceTimer.stop();
-        exerciseDone = false;
-        btnAdvance.setVisible(false);
-        lblAutoAdvance.setText(" ");
-        game.showResult(player, pendingStars, pendingXp,
-                current.getDescription(), pendingWpm, pendingTime);
+        // Vai direto para a tela de resultado — sem timer local nem botão "Avançar" aqui.
+        // O Enter/botão de avançar agora vivem na própria tela de resultado.
+        txtInput.setEnabled(false);
+        game.showResult(player, stars, points, current.getDescription(), wpm, timeSeconds);
     }
 
     // ================================================================
@@ -567,7 +471,7 @@ public class GamePanel extends BasePanel {
         for (int i = 0; i < target.length(); i++) {
             SimpleAttributeSet as = new SimpleAttributeSet();
             StyleConstants.setFontFamily(as, "Nunito Sans");
-            StyleConstants.setFontSize(as, 36);
+            StyleConstants.setFontSize(as, 32);
 
             if (i < typed.length()) {
                 if (typed.charAt(i) == target.charAt(i)) {
@@ -601,27 +505,25 @@ public class GamePanel extends BasePanel {
     private void refreshTopBar() {
         if (player == null) return;
         lblPlayerName.setText(player.getName());
-        lblLevel.setText("Nível " + player.getGameLevel() + " — " + player.getLevelName());
+
+        // Nível agora é calculado pela posição real do exercício na campanha
+        int level = ExerciseFactory.getLevelForIndex(exerciseIndex);
+        String levelName = ExerciseFactory.getLevelName(level);
+        lblLevel.setText("Nível " + level + " — " + levelName);
+
         lblScore.setText(player.getTotalScore() + " pts");
         lblLives.setText(heartsString(player.getLives()));
         lblLives.setForeground(player.getLives() <= 1 ? COLOR_DANGER : new Color(255, 110, 110));
         lblTimer.setText(timeLeft + "s");
         lblTimer.setForeground(Color.WHITE);
 
-        lblSideXP.setText(String.valueOf(player.getTotalScore()));
-        lblSideLevel.setText(String.valueOf(exerciseIndex + 1));
+        lblSideScore.setText(String.valueOf(player.getTotalScore()));
+        lblSideExercise.setText(String.valueOf(exerciseIndex + 1));
         lblSideStreak.setText(player.getStreak() + "x");
 
-        int level    = player.getGameLevel();
-        int progress = player.getXpProgress();
-        xpBar.setValue(progress);
-
-        if (level >= 5) {
-            lblNextLevelHint.setText("Nível máximo atingido!");
-        } else {
-            int xpNeeded = player.getXpForNextLevel() - player.getXp();
-            lblNextLevelHint.setText("Nível " + level + " → " + (level + 1) + "  (" + xpNeeded + " XP)");
-        }
+        // Progresso dentro da categoria atual (ex: "Acentos: 3 de 8")
+        int posInCategory = (exerciseIndex % ExerciseFactory.EXERCISES_PER_SESSION) + 1;
+        lblCategoryHint.setText(levelName + ": " + posInCategory + "/" + ExerciseFactory.EXERCISES_PER_SESSION);
     }
 
     private void setFeedback(String msg, Color color) {
@@ -638,10 +540,8 @@ public class GamePanel extends BasePanel {
     }
 
     private void goMenu() {
-        if (autoAdvanceTimer != null && autoAdvanceTimer.isRunning()) autoAdvanceTimer.stop();
-        if (countdown         != null && countdown.isRunning())        countdown.stop();
+        if (countdown != null && countdown.isRunning()) countdown.stop();
         active = false;
-        exerciseDone = false;
         game.returnToMenu();
     }
 }

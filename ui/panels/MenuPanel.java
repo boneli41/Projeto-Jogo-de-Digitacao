@@ -1,5 +1,6 @@
 package ui.panels;
 
+import factory.ExerciseFactory;
 import model.Player;
 import ui.TypingGame;
 import javax.swing.*;
@@ -11,6 +12,7 @@ import java.util.List;
 public class MenuPanel extends BasePanel {
 
     private JTextField nameField;
+    private JComboBox<String> levelSelector; // seletor de nível inicial
 
     // Painel do ranking — atualizado toda vez que o menu é exibido
     private JPanel rankingContent;
@@ -58,14 +60,13 @@ public class MenuPanel extends BasePanel {
             empty.setAlignmentX(Component.CENTER_ALIGNMENT);
             rankingContent.add(empty);
         } else {
-            int max = Math.min(ranking.size(), 5); // Mostra até 5 posições
+            int max = Math.min(ranking.size(), 5);
             String[] medals = {"🥇", "🥈", "🥉", "4º", "5º"};
             for (int i = 0; i < max; i++) {
                 String[] parts = ranking.get(i);
                 String name  = parts[0];
                 String score = parts[1] + " pts";
-                String lvl   = parts.length >= 3 ? "Nív. " + parts[2] : "";
-                rankingContent.add(rankLine(medals[i], name, score, lvl));
+                rankingContent.add(rankLine(medals[i], name, score));
                 rankingContent.add(Box.createVerticalStrut(4));
             }
         }
@@ -120,8 +121,10 @@ public class MenuPanel extends BasePanel {
                 FONT_BODY, COLOR_TEXT, SwingConstants.LEFT));
         welcome.setOpaque(false);
         left.add(welcome);
-        left.add(Box.createVerticalStrut(10));
-        left.add(buildJourneySection());
+
+        // Seção "Sua Jornada nos Níveis" removida — XP/cadeados não fazem
+        // mais sentido com o sistema atual. left.add(buildJourneySection());
+
         left.add(Box.createVerticalGlue());
 
         gbc.gridx = 0; gbc.weightx = 0.28;
@@ -160,11 +163,30 @@ public class MenuPanel extends BasePanel {
         btn.setFont(FONT_BUTTON);
         btn.setPreferredSize(new Dimension(320, 65));
         btn.addActionListener(e -> startGame());
-        cc.gridy = 2; cc.insets = new Insets(0, 60, 25, 60);
+        cc.gridy = 2; cc.insets = new Insets(0, 60, 10, 60);
         card.add(btn, cc);
 
+        // ---- Seletor de nível inicial (abaixo do botão Iniciar) ----
+        JPanel levelRow = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 0));
+        levelRow.setOpaque(false);
+
+        JLabel levelLabel = label("ou comece direto no:", FONT_SMALL, COLOR_SECONDARY, SwingConstants.CENTER);
+        levelRow.add(levelLabel);
+
+        String[] levelOptions = new String[ExerciseFactory.LEVEL_NAMES.length];
+        for (int i = 0; i < levelOptions.length; i++) {
+            levelOptions[i] = "Nível " + (i + 1) + " — " + ExerciseFactory.LEVEL_NAMES[i];
+        }
+        levelSelector = new JComboBox<>(levelOptions);
+        levelSelector.setFont(FONT_SMALL);
+        levelSelector.setPreferredSize(new Dimension(200, 32));
+        levelRow.add(levelSelector);
+
+        cc.gridy = 3; cc.insets = new Insets(0, 60, 25, 60);
+        card.add(levelRow, cc);
+
         ImageIcon illustrationIcon = new ImageIcon("ui/assets/image-menupanel.png");
-        int maxW = 570, maxH = 380, finalW = maxW, finalH = maxH;
+        int maxW = 570, maxH = 340, finalW = maxW, finalH = maxH;
         if (illustrationIcon.getIconWidth() > 0) {
             double scale = Math.min((double)maxW / illustrationIcon.getIconWidth(),
                     (double)maxH / illustrationIcon.getIconHeight());
@@ -172,7 +194,7 @@ public class MenuPanel extends BasePanel {
             finalH = (int)(illustrationIcon.getIconHeight() * scale);
         }
         Image scaledImg = illustrationIcon.getImage().getScaledInstance(finalW, finalH, Image.SCALE_SMOOTH);
-        cc.gridy = 3; cc.weighty = 1.0;
+        cc.gridy = 4; cc.weighty = 1.0;
         cc.anchor = GridBagConstraints.SOUTH;
         cc.insets = new Insets(0, 0, 0, 0);
         card.add(new JLabel(new ImageIcon(scaledImg)), cc);
@@ -197,7 +219,7 @@ public class MenuPanel extends BasePanel {
         rankCard.setLayout(new BorderLayout());
         rankCard.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
         rankCard.add(rankingContent, BorderLayout.CENTER);
-        refreshRanking(); // Carrega os dados na primeira exibição
+        refreshRanking();
         rc.gridy = 0;
         right.add(rankCard, rc);
 
@@ -258,53 +280,14 @@ public class MenuPanel extends BasePanel {
         return main;
     }
 
-    private JPanel buildJourneySection() {
-        RoundedPanel journey = new RoundedPanel(30, COLOR_ACCENT);
-        journey.setLayout(new BorderLayout(0, 10));
-        journey.setBorder(BorderFactory.createEmptyBorder(15, 20, 30, 20));
-        journey.setMaximumSize(new Dimension(420, 150));
-        journey.add(label("Sua Jornada nos Níveis", FONT_INFO, Color.WHITE, SwingConstants.CENTER), BorderLayout.NORTH);
-
-        JPanel flow = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2 = (Graphics2D) g.create();
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(new Color(255, 255, 255, 80));
-                g2.setStroke(new BasicStroke(3f));
-                g2.drawLine(40, 18, getWidth() - 40, 18);
-                g2.dispose();
-            }
-        };
-        flow.setLayout(new BoxLayout(flow, BoxLayout.Y_AXIS));
-        flow.setOpaque(false);
-
-        JPanel icons = new JPanel(new GridLayout(1, 4)); icons.setOpaque(false);
-        String[] symb = {"\uD83D\uDD13", "\uD83D\uDD12", "\uD83D\uDD12", "\uD83D\uDD12"};
-        for (String s : symb) icons.add(label(s, new Font(Font.DIALOG, Font.PLAIN, 22), Color.WHITE, SwingConstants.CENTER));
-
-        JPanel labels = new JPanel(new GridLayout(1, 4)); labels.setOpaque(false);
-        String[] texts = {"Minúsculas", "Maiúsculas", "Pontuação", "Acentos"};
-        for (String t : texts) labels.add(label(t, FONT_SMALL, Color.WHITE, SwingConstants.CENTER));
-
-        flow.add(icons);
-        flow.add(Box.createVerticalStrut(8));
-        flow.add(labels);
-
-        journey.add(flow, BorderLayout.CENTER);
-        journey.setAlignmentX(Component.LEFT_ALIGNMENT);
-        return journey;
-    }
-
-    /** Linha do ranking com 4 colunas: medalha | nome | pontos | nível */
-    private JPanel rankLine(String medal, String name, String score, String level) {
-        JPanel line = new JPanel(new GridLayout(1, 4, 4, 0));
+    /** Linha do ranking com 3 colunas: medalha | nome | pontos */
+    private JPanel rankLine(String medal, String name, String score) {
+        JPanel line = new JPanel(new GridLayout(1, 3, 4, 0));
         line.setOpaque(false);
         line.setMaximumSize(new Dimension(Integer.MAX_VALUE, 28));
         line.add(label(medal, FONT_SMALL, COLOR_PRIMARY,   SwingConstants.CENTER));
         line.add(label(name,  FONT_SMALL, COLOR_TEXT,      SwingConstants.LEFT));
         line.add(label(score, FONT_SMALL, COLOR_SECONDARY, SwingConstants.CENTER));
-        line.add(label(level, FONT_SMALL, COLOR_ACCENT,    SwingConstants.CENTER));
         return line;
     }
 
@@ -326,6 +309,9 @@ public class MenuPanel extends BasePanel {
             nameField.requestFocusInWindow();
             return;
         }
-        game.startGame(new Player(name));
+
+        // Nível selecionado no combo (índice 0 = Nível 1, índice 4 = Nível 5)
+        int selectedLevel = levelSelector.getSelectedIndex() + 1;
+        game.startGame(new Player(name), selectedLevel);
     }
 }

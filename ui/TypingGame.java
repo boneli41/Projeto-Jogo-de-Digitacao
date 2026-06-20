@@ -48,8 +48,15 @@ public class TypingGame extends JFrame {
         cardLayout.show(container, name);
     }
 
+    /** Inicia a campanha completa, do nível 1. */
     public void startGame(Player player) {
         gamePanel.startGame(player);
+        show(PANEL_GAME);
+    }
+
+    /** Inicia a partir de um nível específico, escolhido no menu. */
+    public void startGame(Player player, int startLevel) {
+        gamePanel.startGame(player, startLevel);
         show(PANEL_GAME);
     }
 
@@ -61,18 +68,36 @@ public class TypingGame extends JFrame {
 
     public void showFinalLevelResult(Player player) {
         player.saveToFile("ranking.txt");
-        resultPanel.showFinalResult(player);
-        show(PANEL_RESULT);
+
+        Object[] options = {"Ver Ranking", "Jogar Novamente", "Sair do Jogo"};
+        int choice = JOptionPane.showOptionDialog(
+                this,
+                "<html><div style='text-align:center; font-size:14px;'>"
+                        + "<b>🎉 Parabéns, " + player.getName() + "!</b><br><br>"
+                        + "Você concluiu todos os exercícios!<br>"
+                        + "Pontuação final: <b>" + player.getTotalScore() + " pts</b>"
+                        + "</div></html>",
+                "Jornada Concluída!",
+                JOptionPane.DEFAULT_OPTION,
+                JOptionPane.INFORMATION_MESSAGE,
+                null,
+                options,
+                options[0]
+        );
+
+        if (choice == 1) {
+            startGame(new Player(player.getName()));
+        } else {
+            returnToMenu();
+        }
     }
 
     public void continueGame() {
-       if(gamePanel.nextExercise()) {
-           show(PANEL_GAME);
-       }
+        gamePanel.nextExercise();
+        show(PANEL_GAME);
     }
 
     public void returnToMenu() {
-        // Atualiza o ranking no menu antes de exibir
         menuPanel.refreshRanking();
         show(PANEL_MENU);
     }
