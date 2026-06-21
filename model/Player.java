@@ -74,7 +74,10 @@ public class Player {
             String[] parts = lines.get(i).split("\\|");
             if (parts.length >= 2 && parts[0].equalsIgnoreCase(name)) {
                 int savedScore = 0;
-                try { savedScore = Integer.parseInt(parts[1]); } catch (NumberFormatException ignored) {}
+                try {
+                    savedScore = Integer.parseInt(parts[1]);
+                } catch (NumberFormatException ignored) {
+                }
                 if (totalScore >= savedScore) lines.set(i, entry);
                 found = true;
                 break;
@@ -85,8 +88,14 @@ public class Player {
 
         lines.sort((a, b) -> {
             int sa = 0, sb = 0;
-            try { sa = Integer.parseInt(a.split("\\|")[1]); } catch (Exception ignored) {}
-            try { sb = Integer.parseInt(b.split("\\|")[1]); } catch (Exception ignored) {}
+            try {
+                sa = Integer.parseInt(a.split("\\|")[1]);
+            } catch (Exception ignored) {
+            }
+            try {
+                sb = Integer.parseInt(b.split("\\|")[1]);
+            } catch (Exception ignored) {
+            }
             return Integer.compare(sb, sa);
         });
 
@@ -97,7 +106,9 @@ public class Player {
         }
     }
 
-    /** Retorna lista de arrays [nome, score, nível, exercícios] ordenada. */
+    /**
+     * Retorna lista de arrays [nome, score, nível, exercícios] ordenada.
+     */
     public static List<String[]> loadRanking(String filePath) {
         List<String[]> ranking = new ArrayList<>();
         Path path = Paths.get(filePath);
@@ -142,12 +153,12 @@ public class Player {
     }
 
     private void checkAchievements() {
-        if (exercisesCompleted >= 1  && !achievements.contains("Primeiro Passo"))  achievements.add("Primeiro Passo");
-        if (exercisesCompleted >= 5  && !achievements.contains("Praticante"))       achievements.add("Praticante");
-        if (exercisesCompleted >= 10 && !achievements.contains("Dedicado"))         achievements.add("Dedicado");
-        if (streak >= 3              && !achievements.contains("Em Sequência"))     achievements.add("Em Sequência");
-        if (streak >= 5              && !achievements.contains("Imparável"))        achievements.add("Imparável");
-        if (totalScore >= 500        && !achievements.contains("500 Pontos"))       achievements.add("500 Pontos");
+        if (exercisesCompleted >= 1 && !achievements.contains("Primeiro Passo")) achievements.add("Primeiro Passo");
+        if (exercisesCompleted >= 5 && !achievements.contains("Praticante")) achievements.add("Praticante");
+        if (exercisesCompleted >= 10 && !achievements.contains("Dedicado")) achievements.add("Dedicado");
+        if (streak >= 3 && !achievements.contains("Em Sequência")) achievements.add("Em Sequência");
+        if (streak >= 5 && !achievements.contains("Imparável")) achievements.add("Imparável");
+        if (totalScore >= 500 && !achievements.contains("500 Pontos")) achievements.add("500 Pontos");
     }
 
     public void loseLife() {
@@ -155,7 +166,9 @@ public class Player {
         streak = 0;
     }
 
-    public void restoreLives() { lives = MAX_LIVES; }
+    public void restoreLives() {
+        lives = MAX_LIVES;
+    }
 
     public void completeExercise() {
         exercisesCompleted++;
@@ -163,7 +176,9 @@ public class Player {
         checkAchievements();
     }
 
-    public boolean isGameOver() { return lives <= 0; }
+    public boolean isGameOver() {
+        return lives <= 0;
+    }
 
     // ================================================================
     //  Getters de Nível de Campanha
@@ -175,12 +190,18 @@ public class Player {
      */
     public String getCampaignLevelName(int campaignLevel) {
         switch (campaignLevel) {
-            case 1:  return "Minúsculas";
-            case 2:  return "Maiúsculas";
-            case 3:  return "Números";
-            case 4:  return "Acentos";
-            case 5:  return "Pontuação";
-            default: return "Minúsculas";
+            case 1:
+                return "Minúsculas";
+            case 2:
+                return "Maiúsculas";
+            case 3:
+                return "Números";
+            case 4:
+                return "Acentos";
+            case 5:
+                return "Pontuação";
+            default:
+                return "Minúsculas";
         }
     }
 
@@ -189,38 +210,71 @@ public class Player {
      */
     public String getLevelName() {
         switch (gameLevel) {
-            case 1:  return "Iniciante";
-            case 2:  return "Aprendiz";
-            case 3:  return "Intermediário";
-            case 4:  return "Avançado";
-            case 5:  return "Especialista";
-            default: return "Iniciante";
+            case 1:
+                return "Iniciante";
+            case 2:
+                return "Aprendiz";
+            case 3:
+                return "Intermediário";
+            case 4:
+                return "Avançado";
+            case 5:
+                return "Especialista";
+            default:
+                return "Iniciante";
         }
     }
 
-    /** XP necessário para chegar ao próximo nível de XP. */
+    /**
+     * XP necessário para chegar ao próximo nível de XP.
+     */
     public int getXpForNextLevel() {
         if (gameLevel >= 5) return XP_THRESHOLD[5];
         return XP_THRESHOLD[gameLevel];
     }
 
-    /** Percentual de progresso (0–100) dentro do nível de XP atual. */
+    /**
+     * Percentual de progresso (0–100) dentro do nível de XP atual.
+     */
     public int getXpProgress() {
         int prev = gameLevel > 1 ? XP_THRESHOLD[gameLevel - 1] : 0;
         int next = getXpForNextLevel();
         if (next == prev) return 100;
-        return (int)(((double)(xp - prev) / (next - prev)) * 100);
+        return (int) (((double) (xp - prev) / (next - prev)) * 100);
     }
 
     // ================================================================
     //  Getters simples
     // ================================================================
-    public String getName()               { return name; }
-    public int    getLives()              { return lives; }
-    public int    getTotalScore()         { return totalScore; }
-    public int    getGameLevel()          { return gameLevel; }
-    public int    getXp()                 { return xp; }
-    public int    getExercisesCompleted() { return exercisesCompleted; }
-    public int    getStreak()             { return streak; }
-    public List<String> getAchievements() { return new ArrayList<>(achievements); }
+    public String getName() {
+        return name;
+    }
+
+    public int getLives() {
+        return lives;
+    }
+
+    public int getTotalScore() {
+        return totalScore;
+    }
+
+    public int getGameLevel() {
+        return gameLevel;
+    }
+
+    public int getXp() {
+        return xp;
+    }
+
+    public int getExercisesCompleted() {
+        return exercisesCompleted;
+    }
+
+    public int getStreak() {
+        return streak;
+    }
+
+    public List<String> getAchievements() {
+        return new ArrayList<>(achievements);
+    }
 }

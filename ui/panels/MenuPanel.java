@@ -334,22 +334,50 @@ public class MenuPanel extends BasePanel {
     private void showKeyboardDialog() {
         JDialog dlg = new JDialog(
                 (Frame) SwingUtilities.getWindowAncestor(this),
-                "⌨️  Teclado ABNT2", false);
-        dlg.setSize(900, 420);
+                "", false);   // sem título na barra
+        dlg.setUndecorated(false);
+        dlg.getRootPane().putClientProperty("JRootPane.titleBarBackground", new Color(37, 99, 235));
+        dlg.setSize(1200, 520);
         dlg.setLocationRelativeTo(this);
         dlg.setResizable(true);
 
-        // Painel que desenha o teclado com legendas anotadas
-        JPanel panel = new JPanel(new BorderLayout(0, 8));
+        JPanel panel = new JPanel(new BorderLayout(0, 6));
         panel.setBackground(new Color(245, 247, 251));
-        panel.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
+        panel.setBorder(BorderFactory.createEmptyBorder(10, 14, 10, 14));
 
-        JLabel title = new JLabel("Conheça o teclado — posição das teclas especiais", SwingConstants.CENTER);
-        title.setFont(FONT_BODY);
+        // Cabeçalho com título e dica do Shift
+        JPanel header = new JPanel(new BorderLayout(0, 4));
+        header.setOpaque(false);
+
+        JLabel title = new JLabel(
+                "⌨️  Conheça o Teclado — posição das teclas especiais",
+                SwingConstants.CENTER);
+        title.setFont(FONT_INFO);
         title.setForeground(COLOR_PRIMARY);
-        panel.add(title, BorderLayout.NORTH);
 
-        // Painel do teclado desenhado com legendas
+        // Explicação do Shift
+        JLabel shiftHint = new JLabel(
+                "<html><center>"
+                        + "<b style='color:#1e3a8a'>Como usar o SHIFT:</b> "
+                        + "Pressione e <b>segure</b> a tecla "
+                        + "<b style='color:#b45309'>SHIFT</b> (canto inferior esquerdo ou direito do teclado) "
+                        + "e, enquanto a segura, pressione a outra tecla. "
+                        + "Use para letras maiúsculas e símbolos como <b>! @ # $ % & *</b>"
+                        + "</center></html>",
+                SwingConstants.CENTER);
+        shiftHint.setFont(FONT_SMALL);
+        shiftHint.setForeground(new Color(60, 60, 60));
+        shiftHint.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(209, 213, 219), 1, true),
+                BorderFactory.createEmptyBorder(5, 10, 5, 10)));
+        shiftHint.setOpaque(true);
+        shiftHint.setBackground(new Color(255, 251, 235));
+
+        header.add(title, BorderLayout.NORTH);
+        header.add(shiftHint, BorderLayout.CENTER);
+        panel.add(header, BorderLayout.NORTH);
+
+        // Teclado desenhado
         JPanel kbView = new JPanel() {
             @Override protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
@@ -429,7 +457,7 @@ public class MenuPanel extends BasePanel {
             {"AltGr","",10.0f,4f,1.2f,U,true},{"Win","",11.2f,4f,1.0f,U,true},
             {"Menu","",12.2f,4f,0.9f,U,true},{"Ctrl","",13.1f,4f,0.9f,U,true},
         };
- 
+
         // Nomes legíveis para as teclas especiais com legenda
         java.util.Map<String,String> specialNames = new java.util.LinkedHashMap<>();
         specialNames.put("Tab",   "TAB Mudar campo");
@@ -442,7 +470,7 @@ public class MenuPanel extends BasePanel {
         specialNames.put("AltGr", "AltGr");
         specialNames.put("Win",   "WIN");
         specialNames.put("Menu",  "MENU");
- 
+
         for (Object[] k : keys) {
             String lbl   = (String)  k[0];
             String shift = (String)  k[1];
@@ -451,31 +479,31 @@ public class MenuPanel extends BasePanel {
             float  kw    = (float)   k[4];
             float  kh    = (float)   k[5];
             boolean spec = (boolean) k[6];
- 
+
             float px = pad + kx * unit + gap;
             float py = pad + ky * (rowH + 3) + gap;
             float pw = kw * unit - gap * 2;
             float ph = kh * rowH + (kh > 1 ? (kh - 1) * 3 : 0) - gap * 2;
- 
+
             boolean isEspaco = !spec && lbl.isEmpty();
- 
+
             // Sombra
             g2.setColor(shadowCol);
             g2.fillRoundRect((int)px+1,(int)py+2,(int)pw,(int)ph,arc,arc);
- 
+
             // Fundo
             Color bg = spec ? bgSpecial : (isEspaco ? bgSpace : bgKey);
             g2.setColor(bg);
             g2.fillRoundRect((int)px,(int)py,(int)pw,(int)ph,arc,arc);
             g2.setColor(borderCol);
             g2.drawRoundRect((int)px,(int)py,(int)pw,(int)ph,arc,arc);
- 
+
             // Texto
             if (spec) {
                 // Teclas especiais: label original pequeno em cima, nome legível embaixo
                 g2.setFont(fSpecial);
                 g2.setColor(fgSpecial);
- 
+
                 String name = specialNames.getOrDefault(lbl, lbl);
                 // Para ⇧/Caps/Tab etc., escreve o label em cima e o nome embaixo
                 if (lbl.equals("⇧") || lbl.equals("⌫") || lbl.equals("Tab") ||
@@ -533,7 +561,7 @@ public class MenuPanel extends BasePanel {
         }
         g2.dispose();
     }
- 
+
     // ================================================================
     //  Seção "Escolha onde começar" — módulos clicáveis, sem cadeados
     // ================================================================
@@ -543,38 +571,38 @@ public class MenuPanel extends BasePanel {
         journey.setBorder(BorderFactory.createEmptyBorder(14, 16, 16, 16));
         journey.setMaximumSize(new Dimension(420, 155));
         journey.add(label("Escolha onde começar", FONT_INFO, Color.WHITE, SwingConstants.CENTER), BorderLayout.NORTH);
- 
+
         // Grid com os 5 módulos clicáveis
         JPanel grid = new JPanel(new GridLayout(1, 5, 5, 0));
         grid.setOpaque(false);
- 
+
         for (int i = 0; i < MODULE_LABELS.length; i++) {
             final int level = i + 1;
             final String lbl = MODULE_LABELS[i];
             final String icon = MODULE_ICONS[i];
- 
+
             // Cada módulo é um RoundedPanel com fundo semi-transparente
             RoundedPanel cell = new RoundedPanel(12, new Color(255, 255, 255, 45));
             cell.setLayout(new BoxLayout(cell, BoxLayout.Y_AXIS));
             cell.setBorder(BorderFactory.createEmptyBorder(8, 4, 8, 4));
             cell.setCursor(new Cursor(Cursor.HAND_CURSOR));
- 
+
             JLabel iconLbl = new JLabel(icon, SwingConstants.CENTER);
             iconLbl.setFont(new Font(Font.MONOSPACED, Font.BOLD, 13));
             iconLbl.setForeground(Color.WHITE);
             iconLbl.setAlignmentX(Component.CENTER_ALIGNMENT);
- 
+
             JLabel nameLbl = new JLabel("<html><center>" + lbl + "</center></html>", SwingConstants.CENTER);
             nameLbl.setFont(new Font("Poppins", Font.PLAIN, 11));
             nameLbl.setForeground(Color.WHITE);
             nameLbl.setAlignmentX(Component.CENTER_ALIGNMENT);
- 
+
             cell.add(Box.createVerticalGlue());
             cell.add(iconLbl);
             cell.add(Box.createVerticalStrut(4));
             cell.add(nameLbl);
             cell.add(Box.createVerticalGlue());
- 
+
             cell.addMouseListener(new MouseAdapter() {
                 @Override public void mouseClicked(MouseEvent e) { startGame(level); }
                 @Override public void mouseEntered(MouseEvent e) {
@@ -586,15 +614,15 @@ public class MenuPanel extends BasePanel {
                     cell.repaint();
                 }
             });
- 
+
             grid.add(cell);
         }
- 
+
         journey.add(grid, BorderLayout.CENTER);
         journey.setAlignmentX(Component.LEFT_ALIGNMENT);
         return journey;
     }
- 
+
     // ================================================================
     //  Linha de ranking
     // ================================================================
@@ -607,7 +635,7 @@ public class MenuPanel extends BasePanel {
         line.add(label(score, FONT_SMALL, COLOR_SECONDARY, SwingConstants.CENTER));
         return line;
     }
- 
+
     // ================================================================
     //  Footer
     // ================================================================
@@ -621,7 +649,7 @@ public class MenuPanel extends BasePanel {
         footer.add(footerText);
         return footer;
     }
- 
+
     // ================================================================
     //  Iniciar jogo
     // ================================================================

@@ -369,9 +369,10 @@ public class GamePanel extends BasePanel {
         setFeedback(" ", COLOR_SUCCESS);
         renderTarget("");
 
-        // Ao carregar: mostra a primeira tecla esperada
+        // Ao carregar: mostra a primeira tecla esperada (+ vogal se acento)
         if (!current.getTargetText().isEmpty()) {
-            keyboardPanel.highlightCurrentKey(current.getTargetText().charAt(0), false);
+            char firstCh = current.getTargetText().charAt(0);
+            keyboardPanel.highlightCurrentKey(firstCh, baseVowel(firstCh), false);
         }
 
         if (countdown != null && countdown.isRunning()) countdown.stop();
@@ -426,17 +427,19 @@ public class GamePanel extends BasePanel {
 
             if (!correct) {
                 // Erro: acende backspace em vermelho
-                keyboardPanel.highlightCurrentKey('\0', true);
+                keyboardPanel.highlightCurrentKey('\0', '\0', true);
             } else if (typed.length() < target.length()) {
-                // Acerto: mostra próxima tecla esperada
-                keyboardPanel.highlightCurrentKey(target.charAt(typed.length()), false);
+                // Acerto: mostra próxima tecla (+ vogal base se for acento)
+                char nextCh = target.charAt(typed.length());
+                keyboardPanel.highlightCurrentKey(nextCh, baseVowel(nextCh), false);
             }
             // Se typed.length() == target.length() → checkCompletion vai avançar
         } else {
             setFeedback(" ", COLOR_SUCCESS);
             // Campo vazio: mostra primeira tecla
             if (!target.isEmpty()) {
-                keyboardPanel.highlightCurrentKey(target.charAt(0), false);
+                char firstCh = target.charAt(0);
+                keyboardPanel.highlightCurrentKey(firstCh, baseVowel(firstCh), false);
             }
         }
 
@@ -561,6 +564,39 @@ public class GamePanel extends BasePanel {
     private void setFeedback(String msg, Color color) {
         lblFeedback.setText(msg);
         lblFeedback.setForeground(color);
+    }
+
+    /**
+     * Para um caractere acentuado, retorna a vogal base que deve ser
+     * pressionada depois da tecla morta (ex: 'ã' → 'a', 'ê' → 'e').
+     * Retorna '\0' se o caractere não for acento morto composto.
+     */
+    private char baseVowel(char c) {
+        switch (c) {
+            // agudo
+            case '\u00e1': case '\u00c1': return 'a'; // á Á
+            case '\u00e9': case '\u00c9': return 'e'; // é É
+            case '\u00ed': case '\u00cd': return 'i'; // í Í
+            case '\u00f3': case '\u00d3': return 'o'; // ó Ó
+            case '\u00fa': case '\u00da': return 'u'; // ú Ú
+            // grave/crase
+            case '\u00e0': case '\u00c0': return 'a'; // à À
+            case '\u00e8': case '\u00c8': return 'e'; // è È
+            case '\u00ec': case '\u00cc': return 'i'; // ì Ì
+            case '\u00f2': case '\u00d2': return 'o'; // ò Ò
+            case '\u00f9': case '\u00d9': return 'u'; // ù Ù
+            // circunflexo
+            case '\u00e2': case '\u00c2': return 'a'; // â Â
+            case '\u00ea': case '\u00ca': return 'e'; // ê Ê
+            case '\u00ee': case '\u00ce': return 'i'; // î Î
+            case '\u00f4': case '\u00d4': return 'o'; // ô Ô
+            case '\u00fb': case '\u00db': return 'u'; // û Û
+            // til
+            case '\u00e3': case '\u00c3': return 'a'; // ã Ã
+            case '\u00f5': case '\u00d5': return 'o'; // õ Õ
+            case '\u00f1': case '\u00d1': return 'n'; // ñ Ñ
+            default: return '\0';
+        }
     }
 
     private int countCorrect(String typed, String target) {

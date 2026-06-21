@@ -178,13 +178,20 @@ public class KeyboardPanel extends JPanel {
                     // Estratégia conservadora: tudo que for acentuado com agudo/grave/
                     //   circunflexo → tecla ´ sem shift.
                     if (c == '\u00b4') {
-                        String normal = "áéíóúâêîôûàèìòù";   // sem shift
-                        String shift  = "";                    // crase pura raramente usada
-                        for (char ac : normal.toCharArray()) charToKey.put(ac, i);
-                        for (char ac : "ÁÉÍÓÚÂÊÎÔÛÀÈÌÒÙ".toCharArray()) {
-                            charToKey.put(ac, i);
-                            needsShift.add(ac);
+                        // sem Shift (´) → agudo: á é í ó ú
+                        for (char ac : "áéíóú".toCharArray()) charToKey.put(ac, i);
+                        for (char ac : "ÁÉÍÓÚ".toCharArray()) {
+                            charToKey.put(ac, i); needsShift.add(ac);
                         }
+                        // com Shift (`) → grave/crase: à è ì ò ù
+                        for (char ac : "àèìòù".toCharArray()) {
+                            charToKey.put(ac, i); needsShift.add(ac);
+                        }
+                        for (char ac : "ÀÈÌÒÙ".toCharArray()) {
+                            charToKey.put(ac, i); needsShift.add(ac);
+                        }
+                        // a crase isolada (`) também é shift
+                        charToKey.put('`', i); needsShift.add('`');
                     }
 
                     // -------- TIL / CIRCUNFLEXO (tecla ~/^) --------
@@ -242,15 +249,16 @@ public class KeyboardPanel extends JPanel {
 
     // ================================================================
     //  API 2 – acende só a próxima tecla; backspace vermelho se erro
+    //  vowelHint: para acentos mortos, também acende a vogal base
     // ================================================================
-    public void highlightCurrentKey(char expected, boolean hasError) {
+    public void highlightCurrentKey(char expected, char vowelHint, boolean hasError) {
         clearState();
 
         if (hasError) {
-            // Backspace em vermelho
             if (idxBackspace >= 0) KEYS[idxBackspace].isError = true;
         } else {
             markChar(expected);
+            if (vowelHint != '\0') markChar(vowelHint);
             propagateShifts();
         }
         repaint();
@@ -307,8 +315,6 @@ public class KeyboardPanel extends JPanel {
             float pw = k.w * unit - gap * 2;
             float ph = k.h * rowH + (k.h > 1 ? (k.h - 1) * 3 : 0) - gap * 2;
 
-            boolean mixed = k.needNormal && k.needShift;
-
             // Sombra
             g2.setColor(new Color(0,0,0,25));
             g2.fillRoundRect((int)px+1,(int)py+2,(int)pw,(int)ph,arc,arc);
@@ -321,25 +327,6 @@ public class KeyboardPanel extends JPanel {
                 g2.drawRoundRect((int)px,(int)py,(int)pw,(int)ph,arc,arc);
                 g2.setFont(fSpecial); g2.setColor(COL_ERROR_FG);
                 drawCentered(g2, k.label,(int)px,(int)py,(int)pw,(int)ph);
-
-            } else if (mixed) {
-                // Metade esq verde (normal) + metade dir amarela (shift)
-                int half = (int)(pw / 2);
-                g2.setClip((int)px,       (int)py, half,            (int)ph);
-                g2.setColor(COL_NORMAL_BG); g2.fillRoundRect((int)px,(int)py,(int)pw,(int)ph,arc,arc);
-                g2.setClip((int)px+half,  (int)py, (int)pw-half+1,  (int)ph);
-                g2.setColor(COL_SHIFT_BG);  g2.fillRoundRect((int)px,(int)py,(int)pw,(int)ph,arc,arc);
-                g2.setClip(null);
-                g2.setColor(COL_NORMAL_BG.darker()); g2.drawRoundRect((int)px,(int)py,(int)pw,(int)ph,arc,arc);
-                // Linha divisória
-                g2.setColor(new Color(120,120,120,180));
-                g2.drawLine((int)px+half,(int)py+2,(int)px+half,(int)py+(int)ph-2);
-                // Textos
-                g2.setFont(fSmall);
-                g2.setColor(COL_NORMAL_FG);
-                drawInRegion(g2, k.label,      (int)px,       (int)py, half,           (int)ph);
-                g2.setColor(COL_SHIFT_FG);
-                drawInRegion(g2, k.shiftLabel, (int)px+half,  (int)py, (int)pw-half,   (int)ph);
 
             } else {
                 // Cor sólida
@@ -370,21 +357,9 @@ public class KeyboardPanel extends JPanel {
         // ---- Legenda ----
         int ly = getHeight() - LEGEND_H + 2;
         g2.setFont(new Font("Poppins", Font.PLAIN, 10));
-
-        drawLegendItem(g2, COL_NORMAL_BG, "Sem Shift",  pad,       ly);
-        drawLegendItem(g2, COL_SHIFT_BG,  "Com Shift",  pad + 100, ly);
-        drawLegendItem(g2, COL_ERROR_BG,  "Apagar erro",pad + 200, ly);
-
-        // Legenda mista
-        int mx = pad + 320, mw = 22, mh = 10;
-        g2.setClip(mx, ly, mw/2, mh);
-        g2.setColor(COL_NORMAL_BG); g2.fillRoundRect(mx,ly,mw,mh,3,3);
-        g2.setClip(mx+mw/2, ly, mw/2+1, mh);
-        g2.setColor(COL_SHIFT_BG);  g2.fillRoundRect(mx,ly,mw,mh,3,3);
-        g2.setClip(null);
-        g2.setColor(COL_KEY_BORDER); g2.drawRoundRect(mx,ly,mw,mh,3,3);
-        g2.setColor(new Color(60,60,60));
-        g2.drawString("Ambos", mx+mw+4, ly+9);
+        drawLegendItem(g2, COL_NORMAL_BG, "Próxima tecla",      pad,       ly);
+        drawLegendItem(g2, COL_SHIFT_BG,  "Precisa Shift",       pad + 130, ly);
+        drawLegendItem(g2, COL_ERROR_BG,  "Apagar (tecla errada)",pad + 260, ly);
 
         g2.dispose();
     }
