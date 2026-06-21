@@ -315,63 +315,10 @@ public class ResultPanel extends BasePanel {
         removeActionListeners(btnContinue);
         btnContinue.setEnabled(true);
         btnContinue.setText("Ver Ranking  🏆");
-        btnContinue.addActionListener(e -> showRankingDialog());
+        // Delega para o MenuPanel — lógica centralizada lá
+        btnContinue.addActionListener(e -> game.showRankingDialog());
 
         SwingUtilities.invokeLater(() -> btnContinue.requestFocusInWindow());
-    }
-
-    // ================================================================
-    //  Diálogo de ranking (reutiliza a lógica — sem botão "Voltar ao Menu" interno)
-    // ================================================================
-    private void showRankingDialog() {
-        JDialog dialog = new JDialog(
-                (Frame) SwingUtilities.getWindowAncestor(this),
-                "🏆  Ranking", true);
-        dialog.setSize(480, 420);
-        dialog.setLocationRelativeTo(this);
-        dialog.setResizable(false);
-
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setBackground(Color.WHITE);
-        panel.setBorder(BorderFactory.createEmptyBorder(24, 32, 24, 32));
-
-        JLabel title = new JLabel("🏆  Ranking de Jogadores");
-        title.setFont(FONT_SUBTITLE);
-        title.setForeground(COLOR_PRIMARY);
-        title.setAlignmentX(Component.CENTER_ALIGNMENT);
-        panel.add(title);
-        panel.add(Box.createVerticalStrut(16));
-
-        List<String[]> ranking = Player.loadRanking("ranking.txt");
-        if (ranking.isEmpty()) {
-            JLabel empty = new JLabel("Nenhum jogador ainda!");
-            empty.setFont(FONT_BODY);
-            empty.setForeground(COLOR_SECONDARY);
-            empty.setAlignmentX(Component.CENTER_ALIGNMENT);
-            panel.add(empty);
-        } else {
-            String[] medals = {"🥇","🥈","🥉","4º","5º","6º","7º","8º","9º","10º"};
-            int max = Math.min(ranking.size(), medals.length);
-            for (int i = 0; i < max; i++) {
-                String[] parts = ranking.get(i);
-                JPanel row = new JPanel(new GridLayout(1, 4, 8, 0));
-                row.setOpaque(false);
-                row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 32));
-                row.add(label(medals[i],                                     FONT_BODY, COLOR_PRIMARY,   SwingConstants.CENTER));
-                row.add(label(parts[0],                                      FONT_BODY, COLOR_TEXT,      SwingConstants.LEFT));
-                row.add(label(parts[1] + " pts",                             FONT_BODY, COLOR_SECONDARY, SwingConstants.CENTER));
-                row.add(label(parts.length >= 3 ? "Nív. " + parts[2] : "",  FONT_BODY, COLOR_ACCENT,    SwingConstants.CENTER));
-                panel.add(row);
-                panel.add(Box.createVerticalStrut(6));
-            }
-        }
-
-        // Sem botão "Voltar ao Menu" aqui — o X da janela fecha
-        JScrollPane scroll = new JScrollPane(panel);
-        scroll.setBorder(null);
-        dialog.add(scroll);
-        dialog.setVisible(true);
     }
 
     // ================================================================

@@ -79,4 +79,9 @@ public class TypingGame extends JFrame {
         menuPanel.refreshRanking();
         show(PANEL_MENU);
     }
+
+    /** Abre o dialog de ranking centralizado no MenuPanel. */
+    public void showRankingDialog() {
+        menuPanel.showRankingDialog();
+    }
 }

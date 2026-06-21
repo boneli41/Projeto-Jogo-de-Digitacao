@@ -369,7 +369,10 @@ public class GamePanel extends BasePanel {
         setFeedback(" ", COLOR_SUCCESS);
         renderTarget("");
 
-        keyboardPanel.highlightForText(current.getTargetText());
+        // Ao carregar: mostra a primeira tecla esperada
+        if (!current.getTargetText().isEmpty()) {
+            keyboardPanel.highlightCurrentKey(current.getTargetText().charAt(0), false);
+        }
 
         if (countdown != null && countdown.isRunning()) countdown.stop();
 
@@ -414,12 +417,27 @@ public class GamePanel extends BasePanel {
         if (!typed.isEmpty()) {
             char last     = typed.charAt(typed.length() - 1);
             char expected = target.charAt(typed.length() - 1);
+            boolean correct = (last == expected);
+
             setFeedback(
-                    last == expected ? "Muito bem!  Continue assim!" : "Ops! Procure a tecla certa com calma.",
-                    last == expected ? COLOR_SUCCESS : COLOR_DANGER
+                    correct ? "Muito bem!  Continue assim!" : "Ops! Procure a tecla certa com calma.",
+                    correct ? COLOR_SUCCESS : COLOR_DANGER
             );
+
+            if (!correct) {
+                // Erro: acende backspace em vermelho
+                keyboardPanel.highlightCurrentKey('\0', true);
+            } else if (typed.length() < target.length()) {
+                // Acerto: mostra próxima tecla esperada
+                keyboardPanel.highlightCurrentKey(target.charAt(typed.length()), false);
+            }
+            // Se typed.length() == target.length() → checkCompletion vai avançar
         } else {
             setFeedback(" ", COLOR_SUCCESS);
+            // Campo vazio: mostra primeira tecla
+            if (!target.isEmpty()) {
+                keyboardPanel.highlightCurrentKey(target.charAt(0), false);
+            }
         }
 
         if (typed.length() == target.length()) checkCompletion(typed, target);
