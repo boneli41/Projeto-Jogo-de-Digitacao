@@ -329,233 +329,302 @@ public class MenuPanel extends BasePanel {
     }
 
     // ================================================================
-    //  Dialog interno: teclado ABNT2 com legendas
+    //  Dialog interno: teclado centralizado, legendas esq/dir
     // ================================================================
     private void showKeyboardDialog() {
         JDialog dlg = new JDialog(
-                (Frame) SwingUtilities.getWindowAncestor(this),
-                "", false);   // sem título na barra
-        dlg.setUndecorated(false);
-        dlg.getRootPane().putClientProperty("JRootPane.titleBarBackground", new Color(37, 99, 235));
-        dlg.setSize(1200, 520);
+                (Frame) SwingUtilities.getWindowAncestor(this), "", false);
+        dlg.setSize(1250, 580);
         dlg.setLocationRelativeTo(this);
-        dlg.setResizable(true);
+        dlg.setResizable(false);
 
-        JPanel panel = new JPanel(new BorderLayout(0, 6));
-        panel.setBackground(new Color(245, 247, 251));
-        panel.setBorder(BorderFactory.createEmptyBorder(10, 14, 10, 14));
+        JPanel root = new JPanel(new BorderLayout(0, 8));
+        root.setBackground(new Color(245, 247, 251));
+        root.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
 
-        // Cabeçalho com título e dica do Shift
-        JPanel header = new JPanel(new BorderLayout(0, 4));
-        header.setOpaque(false);
-
+        // ---- Cabeçalho ----
         JLabel title = new JLabel(
-                "⌨️  Conheça o Teclado — posição das teclas especiais",
+                "\u2328\ufe0f  Conhe\u00e7a o Teclado \u2014 posi\u00e7\u00e3o das teclas especiais",
                 SwingConstants.CENTER);
         title.setFont(FONT_INFO);
         title.setForeground(COLOR_PRIMARY);
 
-        // Explicação do Shift
         JLabel shiftHint = new JLabel(
                 "<html><center>"
                         + "<b style='color:#1e3a8a'>Como usar o SHIFT:</b> "
                         + "Pressione e <b>segure</b> a tecla "
-                        + "<b style='color:#b45309'>SHIFT</b> (canto inferior esquerdo ou direito do teclado) "
-                        + "e, enquanto a segura, pressione a outra tecla. "
-                        + "Use para letras maiúsculas e símbolos como <b>! @ # $ % & *</b>"
+                        + "<b style='color:#1e40af'>SHIFT</b> (canto inferior esquerdo ou direito do teclado) "
+                        + "e, enquanto segura, pressione a outra tecla. "
+                        + "Use para <b>letras mai\u00fasculas</b> e s\u00edmbolos como "
+                        + "<b>! @ # $ % &amp; *</b>"
                         + "</center></html>",
                 SwingConstants.CENTER);
         shiftHint.setFont(FONT_SMALL);
-        shiftHint.setForeground(new Color(60, 60, 60));
+        shiftHint.setForeground(new Color(30, 58, 138));
         shiftHint.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(209, 213, 219), 1, true),
-                BorderFactory.createEmptyBorder(5, 10, 5, 10)));
+                BorderFactory.createLineBorder(new Color(147, 197, 253), 1, true),
+                BorderFactory.createEmptyBorder(6, 14, 6, 14)));
         shiftHint.setOpaque(true);
-        shiftHint.setBackground(new Color(255, 251, 235));
+        shiftHint.setBackground(new Color(239, 246, 255));
 
+        JPanel header = new JPanel(new BorderLayout(0, 6));
+        header.setOpaque(false);
         header.add(title, BorderLayout.NORTH);
         header.add(shiftHint, BorderLayout.CENTER);
-        panel.add(header, BorderLayout.NORTH);
+        root.add(header, BorderLayout.NORTH);
 
-        // Teclado desenhado
+        // ---- Corpo: legenda-esq | teclado | legenda-dir ----
+        JPanel body = new JPanel(new BorderLayout(10, 0));
+        body.setOpaque(false);
+
+        body.add(buildLegendLeft(),  BorderLayout.WEST);
+        body.add(buildLegendRight(), BorderLayout.EAST);
+
+        // Teclado: ocupa o espaço central, desenhado via paintComponent
         JPanel kbView = new JPanel() {
             @Override protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
                 drawAnnotatedKeyboard((Graphics2D) g.create(), getWidth(), getHeight());
             }
         };
-        kbView.setBackground(new Color(245, 247, 251));
-        panel.add(kbView, BorderLayout.CENTER);
+        kbView.setBackground(new Color(243, 246, 252));
+        kbView.setBorder(BorderFactory.createLineBorder(new Color(186, 205, 235), 1, true));
+        body.add(kbView, BorderLayout.CENTER);
 
-        dlg.add(panel);
+        root.add(body, BorderLayout.CENTER);
+        dlg.add(root);
         dlg.setVisible(true);
     }
 
+    // ---- Legenda ESQUERDA (Tab, Caps, Shift esq, Ctrl, Alt) ----
+    private JPanel buildLegendLeft() {
+        // Cada item: [nome curto, descricao, seta direção]
+        // Seta aponta para a direita ( → ) porque a tecla está à direita da legenda
+        String[][] items = {
+                {"Tab",      "Avan\u00e7a de campo"},
+                {"Caps Lock","Fixa letras mai\u00fasculas"},
+                {"SHIFT",    "Segure + outra tecla\npara mai\u00fascula/s\u00edmbolo"},
+                {"Ctrl",     "Atalhos (n\u00e3o usar no jogo)"},
+                {"Alt",      "Atalhos (n\u00e3o usar no jogo)"},
+        };
+        return buildLegendPanel(items, true);
+    }
+
+    // ---- Legenda DIREITA (Backspace, Enter, Shift dir, Espaço, acentos) ----
+    private JPanel buildLegendRight() {
+        // Seta aponta para a esquerda ( ← ) porque a tecla está à esquerda da legenda
+        String[][] items = {
+                {"APAGAR \u232b", "Apaga o \u00faltimo caractere"},
+                {"ENTER \u21b5",  "Confirmar / avan\u00e7ar linha"},
+                {"SHIFT \u21e7",  "Segure + outra tecla\npara mai\u00fascula/s\u00edmbolo"},
+                {"\u00b4  /  `",  "\u00b4 = agudo (\u00e1\u00e9\u00ed\u00f3\u00fa)\n` = crase (\u00e0)"},
+                {"~  /  ^",       "~ = til (\u00e3\u00f5)\nShift+^ = circunflexo (\u00e2\u00ea\u00f4)"},
+                {"Espa\u00e7o",   "Barra longa \u2014 linha de baixo"},
+        };
+        return buildLegendPanel(items, false);
+    }
+
     /**
-     * Desenha um teclado ABNT2 com anotações nas teclas especiais
-     * (Shift, Tab, Enter, Caps Lock, Backspace, Espaço).
+     * Monta um painel de legenda vertical.
+     * leftSide=true  → seta "→" à direita de cada item (tecla está à direita)
+     * leftSide=false → seta "←" à esquerda de cada item (tecla está à esquerda)
+     */
+    private JPanel buildLegendPanel(String[][] items, boolean leftSide) {
+        Color blue      = new Color(37,  99, 235);   // azul padrão do projeto
+        Color blueLight = new Color(219, 234, 254);  // fundo azul clarinho
+        Color blueDark  = new Color(30,  58, 138);   // texto escuro
+        Color textCol   = new Color(30,  58, 138);
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setOpaque(false);
+        panel.setPreferredSize(new Dimension(190, 0));
+
+        String arrow = leftSide ? "\u2192" : "\u2190";   // → ou ←
+
+        for (String[] item : items) {
+            String keyName = item[0];
+            String desc    = item[1];
+
+            JPanel row = new JPanel();
+            row.setLayout(new BoxLayout(row, BoxLayout.Y_AXIS));
+            row.setOpaque(true);
+            row.setBackground(blueLight);
+            row.setAlignmentX(Component.CENTER_ALIGNMENT);
+            row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 72));
+
+            // Borda azul: esquerda se legenda esquerda, direita se legenda direita
+            javax.swing.border.Border accent = leftSide
+                    ? BorderFactory.createMatteBorder(0, 0, 0, 3, blue)
+                    : BorderFactory.createMatteBorder(0, 3, 0, 0, blue);
+            row.setBorder(BorderFactory.createCompoundBorder(
+                    accent,
+                    BorderFactory.createEmptyBorder(5, 8, 5, 8)));
+
+            // Linha superior: [nome] e seta
+            JPanel topLine = new JPanel(
+                    leftSide ? new BorderLayout() : new BorderLayout());
+            topLine.setOpaque(false);
+
+            JLabel keyLbl = new JLabel(keyName);
+            keyLbl.setFont(new Font("SansSerif", Font.BOLD, 12));
+            keyLbl.setForeground(blue);
+
+            JLabel arrowLbl = new JLabel(" " + arrow);
+            arrowLbl.setFont(new Font("SansSerif", Font.BOLD, 14));
+            arrowLbl.setForeground(blue);
+
+            if (leftSide) {
+                // nome à esquerda, seta à direita
+                topLine.add(keyLbl,   BorderLayout.CENTER);
+                topLine.add(arrowLbl, BorderLayout.EAST);
+            } else {
+                // seta à esquerda, nome à direita
+                topLine.add(arrowLbl, BorderLayout.WEST);
+                topLine.add(keyLbl,   BorderLayout.CENTER);
+            }
+
+            // Descrição (pode ter \n)
+            String descHtml = "<html><span style='color:#1e3a8a;font-size:10px'>"
+                    + desc.replace("\n", "<br>") + "</span></html>";
+            JLabel descLbl = new JLabel(descHtml);
+            descLbl.setFont(new Font("SansSerif", Font.PLAIN, 10));
+            descLbl.setForeground(textCol);
+
+            topLine.setAlignmentX(Component.LEFT_ALIGNMENT);
+            descLbl.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+            row.add(topLine);
+            row.add(descLbl);
+            row.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+            panel.add(row);
+            panel.add(Box.createVerticalStrut(5));
+        }
+        panel.add(Box.createVerticalGlue());
+        return panel;
+    }
+
+    /**
+     * Desenha o teclado ABNT2 estático.
+     * Teclas com legenda têm fundo azul claro; demais ficam cinza claro.
      */
     private void drawAnnotatedKeyboard(Graphics2D g2, int W, int H) {
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,      RenderingHints.VALUE_ANTIALIAS_ON);
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
-        // ---- Cores ----
-        Color bgKey     = new Color(240, 240, 240);
-        Color bgSpecial = new Color(200, 210, 230);   // azul claro para especiais
-        Color bgSpace   = new Color(220, 235, 255);
-        Color borderCol = new Color(160, 160, 160);
-        Color shadowCol = new Color(0, 0, 0, 25);
-        Color fgNormal  = new Color(40, 40, 40);
-        Color fgSpecial = new Color(20, 50, 120);
-        Color arrowCol  = new Color(220, 80, 30);     // laranja para setas/legendas
+        // Teclas que têm legenda e devem ter fundo azul claro
+        java.util.Set<String> highlighted = new java.util.HashSet<>(java.util.Arrays.asList(
+                "Tab", "\u232b", "Caps", "\u21b5", "\u21e7", "Ctrl", "Alt",
+                "\u00b4", "~"   // acentos
+        ));
 
-        // Totais de unidades: 15 cols × 5 linhas
+        Color bgKey   = new Color(240, 242, 248);          // cinza claro normal
+        Color bgHigh  = new Color(219, 234, 254);          // azul claro para teclas com legenda
+        Color bgSpace = new Color(219, 234, 254);          // espaço também azul claro
+        Color border  = new Color(160, 175, 200);
+        Color shadow  = new Color(0, 0, 0, 18);
+        Color fgNorm  = new Color(30,  30,  30);
+        Color fgSpec  = new Color(30,  58, 138);            // azul projeto para especiais
+        Color fgShift = new Color(80,  80,  80);
+
+        int   pad    = 6;
         float totalU = 15f;
-        int   pad    = 14;
         float unit   = (W - pad * 2) / totalU;
         float rowH   = (H - pad * 2 - 4 * 3) / 5f;
         float gap    = 2f;
         int   arc    = 5;
 
-        Font fKey     = new Font("SansSerif", Font.BOLD,  Math.max(8,  (int)(unit * 0.28f)));
-        Font fSpecial = new Font("SansSerif", Font.BOLD,  Math.max(7,  (int)(unit * 0.22f)));
-        Font fTiny    = new Font("SansSerif", Font.PLAIN, Math.max(6,  (int)(unit * 0.18f)));
-        Font fAnnot   = new Font("SansSerif", Font.BOLD,  Math.max(9,  (int)(unit * 0.24f)));
+        Font fKey  = new Font("SansSerif", Font.BOLD,  Math.max(8,  (int)(unit * 0.28f)));
+        Font fSpec = new Font("SansSerif", Font.BOLD,  Math.max(7,  (int)(unit * 0.22f)));
+        Font fTiny = new Font("SansSerif", Font.PLAIN, Math.max(5,  (int)(unit * 0.17f)));
 
-        // Definição inline das teclas (sem estado, só para desenho estático)
-        // [label, shiftLabel, x, y, w, h, isSpecial]
-        // Usamos a mesma posição do KeyboardPanel
         float U = 1f;
         Object[][] keys = {
                 // linha 0
                 {"'","\"",0f,0f,U,U,false},{"1","!",1f,0f,U,U,false},{"2","@",2f,0f,U,U,false},
-            {"3","#",3f,0f,U,U,false},{"4","$",4f,0f,U,U,false},{"5","%",5f,0f,U,U,false},
-            {"6","¨",6f,0f,U,U,false},{"7","&",7f,0f,U,U,false},{"8","*",8f,0f,U,U,false},
-            {"9","(",9f,0f,U,U,false},{"0",")",10f,0f,U,U,false},{"-","_",11f,0f,U,U,false},
-            {"=","+",12f,0f,U,U,false},{"⌫","",13f,0f,2f,U,true},
-            // linha 1
-            {"Tab","",0f,1f,1.5f,U,true},{"Q","",1.5f,1f,U,U,false},{"W","",2.5f,1f,U,U,false},
-            {"E","",3.5f,1f,U,U,false},{"R","",4.5f,1f,U,U,false},{"T","",5.5f,1f,U,U,false},
-            {"Y","",6.5f,1f,U,U,false},{"U","",7.5f,1f,U,U,false},{"I","",8.5f,1f,U,U,false},
-            {"O","",9.5f,1f,U,U,false},{"P","",10.5f,1f,U,U,false},{"´","`",11.5f,1f,U,U,false},
-            {"[","{",12.5f,1f,U,U,false},{"↵","",13.5f,1f,1.5f,2f,true},
-            // linha 2
-            {"Caps","",0f,2f,1.8f,U,true},{"A","",1.8f,2f,U,U,false},{"S","",2.8f,2f,U,U,false},
-            {"D","",3.8f,2f,U,U,false},{"F","",4.8f,2f,U,U,false},{"G","",5.8f,2f,U,U,false},
-            {"H","",6.8f,2f,U,U,false},{"J","",7.8f,2f,U,U,false},{"K","",8.8f,2f,U,U,false},
-            {"L","",9.8f,2f,U,U,false},{"Ç","",10.8f,2f,U,U,false},{"~","^",11.8f,2f,U,U,false},
-            {"]","}",12.8f,2f,U,U,false},
-            // linha 3
-            {"⇧","",0f,3f,1.3f,U,true},{"|","\\",1.3f,3f,U,U,false},{"Z","",2.3f,3f,U,U,false},
-            {"X","",3.3f,3f,U,U,false},{"C","",4.3f,3f,U,U,false},{"V","",5.3f,3f,U,U,false},
-            {"B","",6.3f,3f,U,U,false},{"N","",7.3f,3f,U,U,false},{"M","",8.3f,3f,U,U,false},
-            {",","<",9.3f,3f,U,U,false},{".",">",10.3f,3f,U,U,false},{";",":",11.3f,3f,U,U,false},
-            {"/","?",12.3f,3f,U,U,false},{"⇧","",13.3f,3f,1.7f,U,true},
-            // linha 4
-            {"Ctrl","",0f,4f,1.3f,U,true},{"Win","",1.3f,4f,1.2f,U,true},{"Alt","",2.5f,4f,1.2f,U,true},
-            {"",""  ,3.7f,4f,6.3f,U,false},
-            {"AltGr","",10.0f,4f,1.2f,U,true},{"Win","",11.2f,4f,1.0f,U,true},
-            {"Menu","",12.2f,4f,0.9f,U,true},{"Ctrl","",13.1f,4f,0.9f,U,true},
+                {"3","#",3f,0f,U,U,false},{"4","$",4f,0f,U,U,false},{"5","%",5f,0f,U,U,false},
+                {"6","\u00a8",6f,0f,U,U,false},{"7","&",7f,0f,U,U,false},{"8","*",8f,0f,U,U,false},
+                {"9","(",9f,0f,U,U,false},{"0",")",10f,0f,U,U,false},{"-","_",11f,0f,U,U,false},
+                {"=","+",12f,0f,U,U,false},{"\u232b","",13f,0f,2f,U,true},
+                // linha 1
+                {"Tab","",0f,1f,1.5f,U,true},{"Q","",1.5f,1f,U,U,false},{"W","",2.5f,1f,U,U,false},
+                {"E","",3.5f,1f,U,U,false},{"R","",4.5f,1f,U,U,false},{"T","",5.5f,1f,U,U,false},
+                {"Y","",6.5f,1f,U,U,false},{"U","",7.5f,1f,U,U,false},{"I","",8.5f,1f,U,U,false},
+                {"O","",9.5f,1f,U,U,false},{"P","",10.5f,1f,U,U,false},{"\u00b4","`",11.5f,1f,U,U,false},
+                {"[","{",12.5f,1f,U,U,false},{"\u21b5","",13.5f,1f,1.5f,2f,true},
+                // linha 2
+                {"Caps","",0f,2f,1.8f,U,true},{"A","",1.8f,2f,U,U,false},{"S","",2.8f,2f,U,U,false},
+                {"D","",3.8f,2f,U,U,false},{"F","",4.8f,2f,U,U,false},{"G","",5.8f,2f,U,U,false},
+                {"H","",6.8f,2f,U,U,false},{"J","",7.8f,2f,U,U,false},{"K","",8.8f,2f,U,U,false},
+                {"L","",9.8f,2f,U,U,false},{"\u00c7","",10.8f,2f,U,U,false},{"~","^",11.8f,2f,U,U,false},
+                {"]","}",12.8f,2f,U,U,false},
+                // linha 3
+                {"\u21e7","",0f,3f,1.3f,U,true},{"|","\\",1.3f,3f,U,U,false},{"Z","",2.3f,3f,U,U,false},
+                {"X","",3.3f,3f,U,U,false},{"C","",4.3f,3f,U,U,false},{"V","",5.3f,3f,U,U,false},
+                {"B","",6.3f,3f,U,U,false},{"N","",7.3f,3f,U,U,false},{"M","",8.3f,3f,U,U,false},
+                {",","<",9.3f,3f,U,U,false},{".",">",10.3f,3f,U,U,false},{";",":",11.3f,3f,U,U,false},
+                {"/","?",12.3f,3f,U,U,false},{"\u21e7","",13.3f,3f,1.7f,U,true},
+                // linha 4
+                {"Ctrl","",0f,4f,1.3f,U,true},{"Win","",1.3f,4f,1.2f,U,true},{"Alt","",2.5f,4f,1.2f,U,true},
+                {"",""   ,3.7f,4f,6.3f,U,false},
+                {"AltGr","",10.0f,4f,1.2f,U,true},{"Win","",11.2f,4f,1.0f,U,true},
+                {"Menu","",12.2f,4f,0.9f,U,true},{"Ctrl","",13.1f,4f,0.9f,U,true},
         };
 
-        // Nomes legíveis para as teclas especiais com legenda
-        java.util.Map<String,String> specialNames = new java.util.LinkedHashMap<>();
-        specialNames.put("Tab",   "TAB Mudar campo");
-        specialNames.put("⌫",    "APAGAR Caractere");
-        specialNames.put("Caps",  "CAPS Maiúsculas");
-        specialNames.put("↵",    "ENTER Confirmar");
-        specialNames.put("⇧",    "SHIFT Maiúscula/Símbolo");
-        specialNames.put("Ctrl",  "CTRL");
-        specialNames.put("Alt",   "ALT");
-        specialNames.put("AltGr", "AltGr");
-        specialNames.put("Win",   "WIN");
-        specialNames.put("Menu",  "MENU");
-
         for (Object[] k : keys) {
-            String lbl   = (String)  k[0];
-            String shift = (String)  k[1];
-            float  kx    = (float)   k[2];
-            float  ky    = (float)   k[3];
-            float  kw    = (float)   k[4];
-            float  kh    = (float)   k[5];
-            boolean spec = (boolean) k[6];
+            String  lbl   = (String)  k[0];
+            String  shift = (String)  k[1];
+            float   kx    = (float)   k[2];
+            float   ky    = (float)   k[3];
+            float   kw    = (float)   k[4];
+            float   kh    = (float)   k[5];
+            boolean spec  = (boolean) k[6];
+            boolean space = !spec && lbl.isEmpty();
+            boolean isHL  = highlighted.contains(lbl) || space;
 
             float px = pad + kx * unit + gap;
             float py = pad + ky * (rowH + 3) + gap;
             float pw = kw * unit - gap * 2;
             float ph = kh * rowH + (kh > 1 ? (kh - 1) * 3 : 0) - gap * 2;
 
-            boolean isEspaco = !spec && lbl.isEmpty();
-
             // Sombra
-            g2.setColor(shadowCol);
+            g2.setColor(shadow);
             g2.fillRoundRect((int)px+1,(int)py+2,(int)pw,(int)ph,arc,arc);
 
-            // Fundo
-            Color bg = spec ? bgSpecial : (isEspaco ? bgSpace : bgKey);
+            // Fundo: azul claro para teclas com legenda, cinza para as demais
+            Color bg = isHL ? bgHigh : bgKey;
             g2.setColor(bg);
             g2.fillRoundRect((int)px,(int)py,(int)pw,(int)ph,arc,arc);
-            g2.setColor(borderCol);
+            g2.setColor(isHL ? new Color(147,197,253) : border);
             g2.drawRoundRect((int)px,(int)py,(int)pw,(int)ph,arc,arc);
 
             // Texto
-            if (spec) {
-                // Teclas especiais: label original pequeno em cima, nome legível embaixo
-                g2.setFont(fSpecial);
-                g2.setColor(fgSpecial);
-
-                String name = specialNames.getOrDefault(lbl, lbl);
-                // Para ⇧/Caps/Tab etc., escreve o label em cima e o nome embaixo
-                if (lbl.equals("⇧") || lbl.equals("⌫") || lbl.equals("Tab") ||
-                    lbl.equals("Caps") || lbl.equals("↵")) {
-                    // símbolo pequeno no canto superior
-                    g2.setFont(fTiny);
-                    g2.setColor(fgSpecial);
-                    FontMetrics fmt = g2.getFontMetrics();
-                    g2.drawString(lbl, (int)px+3, (int)py+fmt.getAscent()+2);
-                    // nome legível centrado
-                    g2.setFont(fAnnot);
-                    g2.setColor(arrowCol);
-                    String[] lines2 = name.split("\n");
-                    int lineH2 = g2.getFontMetrics().getHeight();
-                    int startY = (int)(py + ph/2 - (lines2.length * lineH2)/2f + g2.getFontMetrics().getAscent());
-                    for (String ln : lines2) {
-                        FontMetrics fm2 = g2.getFontMetrics();
-                        int tx2 = (int)px + ((int)pw - fm2.stringWidth(ln)) / 2;
-                        g2.drawString(ln, tx2, startY);
-                        startY += lineH2;
-                    }
-                } else {
-                    // Ctrl, Alt, Win, Menu, AltGr: apenas o label centrado
-                    g2.setFont(fSpecial);
-                    g2.setColor(fgSpecial);
-                    FontMetrics fm3 = g2.getFontMetrics();
-                    int tx3 = (int)px + ((int)pw - fm3.stringWidth(lbl))/2;
-                    int ty3 = (int)py + ((int)ph - fm3.getHeight())/2 + fm3.getAscent();
-                    g2.drawString(lbl, tx3, ty3);
-                }
-            } else if (isEspaco) {
-                // Barra de espaço
-                g2.setFont(fAnnot);
-                g2.setColor(arrowCol);
-                String spaceTxt = "ESPAÇO";
-                FontMetrics fmSp = g2.getFontMetrics();
-                g2.drawString(spaceTxt,
-                    (int)px + ((int)pw - fmSp.stringWidth(spaceTxt))/2,
-                    (int)py + ((int)ph - fmSp.getHeight())/2 + fmSp.getAscent());
+            if (space) {
+                g2.setFont(fSpec); g2.setColor(fgSpec);
+                FontMetrics fm = g2.getFontMetrics();
+                String t = "ESPA\u00c7O";
+                g2.drawString(t,
+                        (int)px+((int)pw-fm.stringWidth(t))/2,
+                        (int)py+((int)ph-fm.getHeight())/2+fm.getAscent());
+            } else if (spec) {
+                g2.setFont(fSpec); g2.setColor(fgSpec);
+                FontMetrics fm = g2.getFontMetrics();
+                g2.drawString(lbl,
+                        (int)px+((int)pw-fm.stringWidth(lbl))/2,
+                        (int)py+((int)ph-fm.getHeight())/2+fm.getAscent());
             } else {
-                // Tecla normal: label centrado
-                g2.setFont(fKey);
-                g2.setColor(fgNormal);
+                // Label centrado
+                g2.setFont(fKey); g2.setColor(isHL ? fgSpec : fgNorm);
                 FontMetrics fmK = g2.getFontMetrics();
-                int txK = (int)px + ((int)pw - fmK.stringWidth(lbl))/2;
-                int tyK = (int)py + ((int)ph - fmK.getHeight())/2 + fmK.getAscent();
-                g2.drawString(lbl, txK, tyK);
-                // shift label canto superior esquerdo
+                g2.drawString(lbl,
+                        (int)px+((int)pw-fmK.stringWidth(lbl))/2,
+                        (int)py+((int)ph-fmK.getHeight())/2+fmK.getAscent());
+                // shift-label canto superior esquerdo
                 if (!shift.isEmpty()) {
-                    g2.setFont(fTiny);
-                    g2.setColor(new Color(100,100,100));
-                    g2.drawString(shift, (int)px+2, (int)py+g2.getFontMetrics().getAscent()+1);
+                    g2.setFont(fTiny); g2.setColor(fgShift);
+                    g2.drawString(shift, (int)px+2,
+                            (int)py+g2.getFontMetrics().getAscent()+1);
                 }
             }
         }
@@ -563,6 +632,8 @@ public class MenuPanel extends BasePanel {
     }
 
     // ================================================================
+    //  Seção "Escolha onde começar"    // ================================================================
+    //  Seção "Escolha onde começar"    // ================================================================
     //  Seção "Escolha onde começar" — módulos clicáveis, sem cadeados
     // ================================================================
     private JPanel buildJourneySection() {
