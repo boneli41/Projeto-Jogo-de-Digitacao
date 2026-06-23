@@ -11,7 +11,7 @@ public class Player {
     private String name;
     private int lives;
     private int totalScore;
-    private int gameLevel;      // nível de campanha: 1=Minúsculas … 5=Pontuação
+    private int gameLevel;      // nível de XP: 1=Iniciante … 5=Especialista
     private int xp;
     private int exercisesCompleted;
     private int streak;
@@ -24,15 +24,13 @@ public class Player {
     // XP necessário para subir de nível de campanha.
     // Com 8 exercícios por nível e XP base de 60*dificuldade por acerto
     // (+ bônus de velocidade), cada nível rende ~600–900 XP.
-    // Thresholds maiores garantem que a barra só "vire" ao completar
-    // todos os exercícios do nível.
     // ----------------------------------------------------------------
     private static final int[] XP_THRESHOLD = {
             0,     // índice 0 – não usado
-            800,   // nível 1 → 2  (Minúsculas  → Maiúsculas)
-            1700,  // nível 2 → 3  (Maiúsculas  → Números)
-            2700,  // nível 3 → 4  (Números     → Acentos)
-            3800,  // nível 4 → 5  (Acentos     → Pontuação)
+            800,   // nível 1 → 2
+            1700,  // nível 2 → 3
+            2700,  // nível 3 → 4
+            3800,  // nível 4 → 5
             5000   // nível 5 máximo
     };
 
@@ -51,10 +49,7 @@ public class Player {
     //  Salvar e Carregar Progresso
     // ================================================================
 
-    /**
-     * Salva (ou atualiza) a entrada do jogador no arquivo de ranking.
-     * Formato de cada linha: NOME|PONTOS|NIVEL|EXERCICIOS
-     */
+
     public void saveToFile(String filePath) {
         List<String> lines = new ArrayList<>();
         Path path = Paths.get(filePath);
@@ -68,34 +63,12 @@ public class Player {
         }
 
         String entry = name + "|" + totalScore + "|" + gameLevel + "|" + exercisesCompleted;
-        boolean found = false;
-
-        for (int i = 0; i < lines.size(); i++) {
-            String[] parts = lines.get(i).split("\\|");
-            if (parts.length >= 2 && parts[0].equalsIgnoreCase(name)) {
-                int savedScore = 0;
-                try {
-                    savedScore = Integer.parseInt(parts[1]);
-                } catch (NumberFormatException ignored) {
-                }
-                if (totalScore >= savedScore) lines.set(i, entry);
-                found = true;
-                break;
-            }
-        }
-
-        if (!found) lines.add(entry);
+        lines.add(entry); // sempre adiciona — nunca procura/substitui por nome
 
         lines.sort((a, b) -> {
             int sa = 0, sb = 0;
-            try {
-                sa = Integer.parseInt(a.split("\\|")[1]);
-            } catch (Exception ignored) {
-            }
-            try {
-                sb = Integer.parseInt(b.split("\\|")[1]);
-            } catch (Exception ignored) {
-            }
+            try { sa = Integer.parseInt(a.split("\\|")[1]); } catch (Exception ignored) {}
+            try { sb = Integer.parseInt(b.split("\\|")[1]); } catch (Exception ignored) {}
             return Integer.compare(sb, sa);
         });
 
@@ -107,7 +80,8 @@ public class Player {
     }
 
     /**
-     * Retorna lista de arrays [nome, score, nível, exercícios] ordenada.
+     * Retorna lista de arrays [nome, score, nível, exercícios] ordenada,
+     * representando o histórico completo de partidas jogadas.
      */
     public static List<String[]> loadRanking(String filePath) {
         List<String[]> ranking = new ArrayList<>();
@@ -118,7 +92,6 @@ public class Player {
             for (String line : lines) {
                 if (line.trim().isEmpty()) continue;
                 String[] parts = line.split("\\|", -1);
-                // Aceita linhas com 2+ campos para compatibilidade
                 if (parts.length >= 2) {
                     String[] full = new String[]{
                             parts[0],
@@ -146,7 +119,6 @@ public class Player {
     }
 
     private void checkLevelUp() {
-        // gameLevel aqui é o nível de campanha (1–5); sobe apenas até 5
         while (gameLevel < 5 && xp >= XP_THRESHOLD[gameLevel]) {
             gameLevel++;
         }
@@ -181,61 +153,35 @@ public class Player {
     }
 
     // ================================================================
-    //  Getters de Nível de Campanha
+    //  Getters de Nível
     // ================================================================
-
-    /**
-     * Nome do nível de campanha (baseado no índice do módulo escolhido,
-     * não no XP). Usado pela GamePanel para exibir o módulo atual.
-     */
     public String getCampaignLevelName(int campaignLevel) {
         switch (campaignLevel) {
-            case 1:
-                return "Minúsculas";
-            case 2:
-                return "Maiúsculas";
-            case 3:
-                return "Números";
-            case 4:
-                return "Acentos";
-            case 5:
-                return "Pontuação";
-            default:
-                return "Minúsculas";
+            case 1: return "Minúsculas";
+            case 2: return "Maiúsculas";
+            case 3: return "Números";
+            case 4: return "Acentos";
+            case 5: return "Pontuação";
+            default: return "Minúsculas";
         }
     }
 
-    /**
-     * Nome do nível de XP (para exibição na barra lateral – igual ao anterior).
-     */
     public String getLevelName() {
         switch (gameLevel) {
-            case 1:
-                return "Iniciante";
-            case 2:
-                return "Aprendiz";
-            case 3:
-                return "Intermediário";
-            case 4:
-                return "Avançado";
-            case 5:
-                return "Especialista";
-            default:
-                return "Iniciante";
+            case 1: return "Iniciante";
+            case 2: return "Aprendiz";
+            case 3: return "Intermediário";
+            case 4: return "Avançado";
+            case 5: return "Especialista";
+            default: return "Iniciante";
         }
     }
 
-    /**
-     * XP necessário para chegar ao próximo nível de XP.
-     */
     public int getXpForNextLevel() {
         if (gameLevel >= 5) return XP_THRESHOLD[5];
         return XP_THRESHOLD[gameLevel];
     }
 
-    /**
-     * Percentual de progresso (0–100) dentro do nível de XP atual.
-     */
     public int getXpProgress() {
         int prev = gameLevel > 1 ? XP_THRESHOLD[gameLevel - 1] : 0;
         int next = getXpForNextLevel();
@@ -243,38 +189,13 @@ public class Player {
         return (int) (((double) (xp - prev) / (next - prev)) * 100);
     }
 
-    // ================================================================
-    //  Getters simples
-    // ================================================================
-    public String getName() {
-        return name;
-    }
 
-    public int getLives() {
-        return lives;
-    }
-
-    public int getTotalScore() {
-        return totalScore;
-    }
-
-    public int getGameLevel() {
-        return gameLevel;
-    }
-
-    public int getXp() {
-        return xp;
-    }
-
-    public int getExercisesCompleted() {
-        return exercisesCompleted;
-    }
-
-    public int getStreak() {
-        return streak;
-    }
-
-    public List<String> getAchievements() {
-        return new ArrayList<>(achievements);
-    }
+    public String getName() { return name; }
+    public int getLives() { return lives; }
+    public int getTotalScore() { return totalScore; }
+    public int getGameLevel() { return gameLevel; }
+    public int getXp() { return xp; }
+    public int getExercisesCompleted() { return exercisesCompleted; }
+    public int getStreak() { return streak; }
+    public List<String> getAchievements() { return new ArrayList<>(achievements); }
 }
