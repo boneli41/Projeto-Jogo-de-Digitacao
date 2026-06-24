@@ -1,6 +1,6 @@
 @echo off
 chcp 65001 >nul
-echo Compilando DigitaComigo...
+echo Compilando Digita Comigo...
 if not exist out mkdir out
 
 javac -cp "lib\*" -d out -encoding UTF-8 ^
