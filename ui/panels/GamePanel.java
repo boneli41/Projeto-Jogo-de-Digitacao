@@ -13,7 +13,6 @@ import java.util.List;
 
 public class GamePanel extends BasePanel {
 
-    // ===== PAUSE =====
     private JButton btnPause;
     private boolean paused = false;
     private boolean isProcessingPause = false;
@@ -88,6 +87,55 @@ public class GamePanel extends BasePanel {
     private static final Font FONT_EXERCISE_BIG = new Font("Nunito Sans", Font.PLAIN, 36);
     private static final Font FONT_INPUT_BIG    = new Font("Poppins",     Font.PLAIN, 28);
 
+    private static final java.util.Random RANDOM = new java.util.Random();
+
+    private static final String[] MSGS_CORRECT = {
+            "Muito bem!  Continue assim!",
+            "Isso aí!  Você está indo bem!",
+            "Perfeito!  Próxima letra!",
+            "Ótimo!  Continue no seu ritmo!",
+            "Show!  Você acertou!"
+    };
+
+    private static final String[] MSGS_WRONG = {
+            "Ops! Procure a tecla certa com calma.",
+            "Quase lá! Olhe o teclado e tente de novo.",
+            "Sem pressa, procure a tecla certinha.",
+            "Não desanime, respire e tente outra vez."
+    };
+
+    private static final String[] MSGS_3_STARS = {
+            "Perfeito! Você arrasou!",
+            "Excelente! Você é demais!",
+            "Incrível! Continue assim!",
+            "Sensacional! Está cada vez melhor!"
+    };
+
+    private static final String[] MSGS_2_STARS = {
+            "Muito bem! Ótimo trabalho!",
+            "Muito bom! Você está evoluindo!",
+            "Parabéns! Boa digitação!",
+            "Ótimo! Continue praticando!"
+    };
+
+    private static final String[] MSGS_1_STAR = {
+            "Bom início! Vai melhorar!",
+            "Você conseguiu! Continue tentando!",
+            "Foi um começo! Vamos praticar mais!",
+            "Está no caminho certo!"
+    };
+
+    private static final String[] MSGS_0_STARS = {
+            "Tente novamente, não desista!",
+            "Calma, vamos tentar de novo!",
+            "Não desanime, a prática leva à perfeição!",
+            "Respire e tente outra vez, você consegue!"
+    };
+
+    private static String pickRandom(String[] bank) {
+        return bank[RANDOM.nextInt(bank.length)];
+    }
+
     public GamePanel(TypingGame game) { super(game); }
 
     @Override
@@ -110,9 +158,6 @@ public class GamePanel extends BasePanel {
         content.add(createFooterProgress(), BorderLayout.SOUTH);
     }
 
-    // ================================================================
-    //  Barra Superior
-    // ================================================================
     private JPanel buildTopBar() {
         GradientPanel bar = new GradientPanel(COLOR_PRIMARY, COLOR_PRIMARY, true);
         bar.setPreferredSize(new Dimension(0, 100));
@@ -122,7 +167,6 @@ public class GamePanel extends BasePanel {
         JPanel left = new JPanel(new GridLayout(2, 1, 0, 1));
         left.setOpaque(false);
         lblPlayerName = label("Jogador",          FONT_INFO,  Color.WHITE,             SwingConstants.LEFT);
-        // Nível exibe o nível de XP do jogador (Iniciante, Aprendiz, etc.)
         lblLevel      = label("Nível 1 — Iniciante", FONT_SMALL, new Color(200,225,255), SwingConstants.LEFT);
         left.add(lblPlayerName);
         left.add(lblLevel);
@@ -148,9 +192,6 @@ public class GamePanel extends BasePanel {
         return bar;
     }
 
-    // ================================================================
-    //  Barra Lateral
-    // ================================================================
     private JPanel buildSidebar() {
         JPanel side = new JPanel();
         side.setLayout(new BoxLayout(side, BoxLayout.Y_AXIS));
@@ -173,7 +214,6 @@ public class GamePanel extends BasePanel {
                 lblSideLevel  = label("1",  FONT_SUBTITLE, Color.WHITE, SwingConstants.CENTER), COLOR_ACCENT));
         side.add(Box.createVerticalStrut(20));
 
-        // Card XP com barra de progresso
         RoundedPanel xpCard = new RoundedPanel(20, COLOR_ACCENT);
         xpCard.setLayout(new BoxLayout(xpCard, BoxLayout.Y_AXIS));
         xpCard.setBorder(BorderFactory.createEmptyBorder(10, 12, 10, 12));
@@ -206,9 +246,6 @@ public class GamePanel extends BasePanel {
         return card;
     }
 
-    // ================================================================
-    //  Área Central
-    // ================================================================
     private JPanel buildCenter() {
         JPanel center = new JPanel(new BorderLayout(0, 8));
         center.setOpaque(false);
@@ -245,7 +282,6 @@ public class GamePanel extends BasePanel {
         card.add(cardSouth,   BorderLayout.SOUTH);
         center.add(card, BorderLayout.CENTER);
 
-        // Sul: teclado + campo de digitação
         JPanel southSection = new JPanel(new BorderLayout(0, 6));
         southSection.setOpaque(false);
 
@@ -281,9 +317,6 @@ public class GamePanel extends BasePanel {
         return center;
     }
 
-    // ================================================================
-    //  Rodapé
-    // ================================================================
     private JPanel createFooterProgress() {
         GradientPanel bar = new GradientPanel(COLOR_ACCENT, COLOR_ACCENT, false);
         bar.setPreferredSize(new Dimension(0, 85));
@@ -310,15 +343,6 @@ public class GamePanel extends BasePanel {
         return bar;
     }
 
-    // ================================================================
-    //  API Pública
-    // ================================================================
-
-    /**
-     * Inicia o jogo a partir do módulo escolhido (1–5).
-     * Carrega todos os exercícios desse módulo até o 5 em sequência.
-     * A tela final só aparece após o último exercício do nível 5.
-     */
     public void startGame(Player p, int campaignLvl) {
         this.player        = p;
         this.campaignLevel = campaignLvl;
@@ -330,8 +354,6 @@ public class GamePanel extends BasePanel {
         this.exerciseIndex = 0;
         loadExercise();
     }
-
-    // Mantém compatibilidade
     public void startGame(Player p) { startGame(p, 1); }
 
     public boolean nextExercise() {
@@ -344,9 +366,6 @@ public class GamePanel extends BasePanel {
         return true;
     }
 
-    // ================================================================
-    //  Carregamento do Exercício
-    // ================================================================
     private void loadExercise() {
         if (exercises == null || exercises.isEmpty()) return;
 
@@ -369,7 +388,6 @@ public class GamePanel extends BasePanel {
         setFeedback(" ", COLOR_SUCCESS);
         renderTarget("");
 
-        // Ao carregar: mostra a primeira tecla esperada (+ vogal se acento)
         if (!current.getTargetText().isEmpty()) {
             char firstCh = current.getTargetText().charAt(0);
             keyboardPanel.highlightCurrentKey(firstCh, baseVowel(firstCh), false);
@@ -383,15 +401,12 @@ public class GamePanel extends BasePanel {
         SwingUtilities.invokeLater(() -> txtInput.requestFocusInWindow());
     }
 
-    // ================================================================
-    //  Cronômetro
-    // ================================================================
     private void tickTimer() {
         timeLeft--;
         lblTimer.setText(timeLeft + "s");
         lblTimer.setForeground(timeLeft <= 10 ? COLOR_DANGER
                 : timeLeft <= 20 ? COLOR_WARNING
-                : Color.WHITE);
+                  : Color.WHITE);
         if (timeLeft <= 0) onTimeUp();
     }
 
@@ -401,9 +416,6 @@ public class GamePanel extends BasePanel {
         finishExercise("Tempo esgotado! Não desanime!", COLOR_DANGER, 0, 0, 0, (int)(elapsed / 1000));
     }
 
-    // ================================================================
-    //  Processamento da Digitação
-    // ================================================================
     private void onInput() {
         String typed  = txtInput.getText();
         String target = current.getTargetText();
@@ -421,22 +433,18 @@ public class GamePanel extends BasePanel {
             boolean correct = (last == expected);
 
             setFeedback(
-                    correct ? "Muito bem!  Continue assim!" : "Ops! Procure a tecla certa com calma.",
+                    correct ? pickRandom(MSGS_CORRECT) : pickRandom(MSGS_WRONG),
                     correct ? COLOR_SUCCESS : COLOR_DANGER
             );
 
             if (!correct) {
-                // Erro: acende backspace em vermelho
                 keyboardPanel.highlightCurrentKey('\0', '\0', true);
             } else if (typed.length() < target.length()) {
-                // Acerto: mostra próxima tecla (+ vogal base se for acento)
                 char nextCh = target.charAt(typed.length());
                 keyboardPanel.highlightCurrentKey(nextCh, baseVowel(nextCh), false);
             }
-            // Se typed.length() == target.length() → checkCompletion vai avançar
         } else {
             setFeedback(" ", COLOR_SUCCESS);
-            // Campo vazio: mostra primeira tecla
             if (!target.isEmpty()) {
                 char firstCh = target.charAt(0);
                 keyboardPanel.highlightCurrentKey(firstCh, baseVowel(firstCh), false);
@@ -462,10 +470,10 @@ public class GamePanel extends BasePanel {
         int    wpm         = (int) Math.round(words / minutes);
 
         String msg; Color col;
-        if      (stars == 3) { msg = "Perfeito! Você arrasou!";       col = COLOR_SUCCESS;         }
-        else if (stars == 2) { msg = "Muito bem! Ótimo trabalho!";    col = new Color(0, 140, 80); }
-        else if (stars == 1) { msg = "Bom início! Vai melhorar!";     col = COLOR_WARNING;         }
-        else                 { msg = "Tente novamente, não desista!"; col = COLOR_DANGER;          }
+        if      (stars == 3) { msg = pickRandom(MSGS_3_STARS); col = COLOR_SUCCESS;         }
+        else if (stars == 2) { msg = pickRandom(MSGS_2_STARS); col = new Color(0, 140, 80); }
+        else if (stars == 1) { msg = pickRandom(MSGS_1_STAR);  col = COLOR_WARNING;         }
+        else                 { msg = pickRandom(MSGS_0_STARS); col = COLOR_DANGER;          }
 
         finishExercise(msg, col, stars, xp, wpm, timeSeconds);
     }
@@ -481,15 +489,10 @@ public class GamePanel extends BasePanel {
 
         refreshTopBar();
         player.saveToFile("ranking.txt");
-
-        // Avança diretamente para a tela de resultado — sem botão nem timer na GamePanel
         txtInput.setEnabled(false);
         game.showResult(player, stars, xp, current.getDescription(), wpm, timeSeconds);
     }
 
-    // ================================================================
-    //  Renderização Colorida
-    // ================================================================
     private void renderTarget(String typed) {
         StyledDocument doc = txtExercise.getStyledDocument();
         try { doc.remove(0, doc.getLength()); } catch (BadLocationException ex) { /* ignorado */ }
@@ -527,15 +530,10 @@ public class GamePanel extends BasePanel {
         doc.setParagraphAttributes(0, doc.getLength(), center, false);
     }
 
-    // ================================================================
-    //  Helpers
-    // ================================================================
     private void refreshTopBar() {
         if (player == null) return;
         lblPlayerName.setText(player.getName());
 
-        // Exibe "Nível X — NomeXP" (Iniciante, Aprendiz...) — igual ao original
-        // O nome do módulo (Minúsculas, Maiúsculas...) já aparece no lblCategory
         lblLevel.setText("Nível " + player.getGameLevel() + " — " + player.getLevelName());
 
         lblScore.setText(player.getTotalScore() + " pts");
@@ -548,7 +546,6 @@ public class GamePanel extends BasePanel {
         lblSideLevel.setText(String.valueOf(exerciseIndex + 1));
         lblSideStreak.setText(player.getStreak() + "x");
 
-        // Barra de XP: progresso dentro do nível de XP atual
         int progress = player.getXpProgress();
         xpBar.setValue(progress);
 
@@ -566,32 +563,23 @@ public class GamePanel extends BasePanel {
         lblFeedback.setForeground(color);
     }
 
-    /**
-     * Para um caractere acentuado, retorna a vogal base que deve ser
-     * pressionada depois da tecla morta (ex: 'ã' → 'a', 'ê' → 'e').
-     * Retorna '\0' se o caractere não for acento morto composto.
-     */
     private char baseVowel(char c) {
         switch (c) {
-            // agudo
             case '\u00e1': case '\u00c1': return 'a'; // á Á
             case '\u00e9': case '\u00c9': return 'e'; // é É
             case '\u00ed': case '\u00cd': return 'i'; // í Í
             case '\u00f3': case '\u00d3': return 'o'; // ó Ó
             case '\u00fa': case '\u00da': return 'u'; // ú Ú
-            // grave/crase
             case '\u00e0': case '\u00c0': return 'a'; // à À
             case '\u00e8': case '\u00c8': return 'e'; // è È
             case '\u00ec': case '\u00cc': return 'i'; // ì Ì
             case '\u00f2': case '\u00d2': return 'o'; // ò Ò
             case '\u00f9': case '\u00d9': return 'u'; // ù Ù
-            // circunflexo
             case '\u00e2': case '\u00c2': return 'a'; // â Â
             case '\u00ea': case '\u00ca': return 'e'; // ê Ê
             case '\u00ee': case '\u00ce': return 'i'; // î Î
             case '\u00f4': case '\u00d4': return 'o'; // ô Ô
             case '\u00fb': case '\u00db': return 'u'; // û Û
-            // til
             case '\u00e3': case '\u00c3': return 'a'; // ã Ã
             case '\u00f5': case '\u00d5': return 'o'; // õ Õ
             case '\u00f1': case '\u00d1': return 'n'; // ñ Ñ
