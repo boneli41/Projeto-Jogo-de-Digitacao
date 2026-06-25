@@ -1,3 +1,7 @@
 # Default ignored files
 /shelf/
 /.idea/workspace.xml
+
+# Java build outputs
+*.class
+/out/

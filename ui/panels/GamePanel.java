@@ -1,142 +1,244 @@
-package ui.panels; // Define o pacote onde esta classe reside
+package ui.panels;
 
-import factory.ExerciseFactory; // Importa a fábrica que cria os exercícios
-import model.Exercise; // Importa a classe base de exercícios
-import model.Player; // Importa a classe que guarda os dados do jogador
-import ui.TypingGame; // Importa a janela principal do jogo
+import factory.ExerciseFactory;
+import model.Exercise;
+import model.Player;
+import ui.TypingGame;
 
-import javax.swing.*; // Importa componentes gráficos básicos (JLabel, JPanel, etc)
-import javax.swing.text.*; // Importa classes para manipular texto estilizado (cores no texto)
-import java.awt.*; // Importa classes de layout e cores básicas
-import java.awt.event.*; // Importa classes para capturar eventos de teclado e mouse
-import java.util.List; // Importa a interface de Lista do Java
+import javax.swing.*;
+import javax.swing.text.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.List;
 
-public class GamePanel extends BasePanel { // Define a classe que herda as cores e fontes de BasePanel
+public class GamePanel extends BasePanel {
 
-    // -------- Estado do Modelo (Lógica de dados) --------
-    private Player player; // Referência para o jogador atual
-    private List<Exercise> exercises; // Lista com todos os exercícios do jogo
-    private int exerciseIndex; // Índice de qual exercício está sendo feito agora
-    private Exercise current; // O objeto do exercício atual
-    private boolean active; // Indica se o jogo está rodando ou pausado/finalizado
-    private long startTime; // Guarda o momento exato em que o exercício começou
-    private int timeLeft; // Contador de segundos restantes
+    private JButton btnPause;
+    private boolean paused = false;
+    private boolean isProcessingPause = false;
 
-    // -------- Rótulos da barra superior --------
-    private JLabel lblPlayerName; // Exibe o nome do idoso
-    private JLabel lblLevel; // Exibe o nível (Iniciante, Aprendiz, etc)
-    private JLabel lblLives; // Exibe os corações (vidas)
-    private JLabel lblScore; // Exibe a pontuação total
-    private JLabel lblTimer; // Exibe o cronômetro
-
-    // -------- Rótulos da barra lateral --------
-    private JLabel lblSideXP;     // XP total na lateral
-    private JLabel lblSideLevel;  // Nível atual na lateral
-    private JLabel lblSideStreak; // Sequência na lateral
-    private JLabel lblNextLevelHint; // "Faltam X questões..."
-
-    // -------- Área do exercício (Centro) --------
-    private JLabel lblCategory; // Exibe a categoria do exercício
-    private JLabel lblInstructions; // Exibe a instrução (ex: "Digite a frase abaixo")
-    private JTextPane txtExercise; // Área que mostra o texto colorido (onde o usuário lê)
-    private JTextField txtInput; // Campo onde o usuário realmente digita
-    private JLabel lblFeedback; // Mensagem de incentivo ou erro
-
-    // -------- Barra inferior --------
-    private JProgressBar progressBar; // Barra de progresso do exercício atual
-    private JLabel lblProgress; // Texto indicando qual exercício de quantos (ex: 1 de 40)
-
-    // -------- Temporizador --------
-    private Timer countdown; // Objeto que faz a contagem regressiva
-
-    // -------- Cores para o feedback de caracteres --------
-    private static final Color COL_CORRECT_FG = new Color( 27, 135,  50); // Verde escuro para letra correta
-    private static final Color COL_CORRECT_BG = new Color(220, 255, 220); // Verde claro para o fundo da letra correta
-    private static final Color COL_WRONG_FG   = new Color(180,  20,  20); // Vermelho para letra errada
-    private static final Color COL_WRONG_BG   = new Color(255, 220, 220); // Rosa claro para o fundo da letra errada
-    private static final Color COL_CURSOR_BG  = new Color(180, 220, 255); // Azul claro para destacar onde o usuário deve digitar
-    private static final Color COL_NORMAL_FG  = new Color( 60,  60,  60); // Cinza escuro para letras ainda não digitadas
-
-    public GamePanel(TypingGame game) { // Construtor da classe
-        super(game); // Chama o construtor da BasePanel
+    private void pausarJogo() {
+        if (isProcessingPause) return;
+        isProcessingPause = true;
+        paused = !paused;
+        btnPause.setText(paused ? "Continuar" : "Pausar");
+        if (paused) {
+            if (countdown != null) countdown.stop();
+            txtInput.setEnabled(false);
+            setFeedback("JOGO PAUSADO", Color.ORANGE);
+        } else {
+            if (countdown != null) countdown.start();
+            txtInput.setEnabled(true);
+            txtInput.requestFocus();
+            setFeedback("", COLOR_SUCCESS);
+        }
+        isProcessingPause = false;
     }
 
+    // -------- Estado do Modelo --------
+    private Player player;
+    private List<Exercise> exercises;
+    private int exerciseIndex;
+    private Exercise current;
+    private boolean active;
+    private long startTime;
+    private int timeLeft;
+
+    // -------- Nível de campanha atual (1–5) --------
+    private int campaignLevel;
+
+    // -------- Barra superior --------
+    private JLabel lblPlayerName;
+    private JLabel lblLevel;
+    private JLabel lblLives;
+    private JLabel lblScore;
+    private JLabel lblTimer;
+
+    // -------- Barra lateral --------
+    private JLabel lblSideXP;
+    private JLabel lblSideLevel;
+    private JLabel lblSideStreak;
+    private JLabel lblNextLevelHint;
+    private JProgressBar xpBar;
+
+    // -------- Centro --------
+    private JLabel lblCategory;
+    private JLabel lblInstructions;
+    private JTextPane txtExercise;
+    private JTextField txtInput;
+    private JLabel lblFeedback;
+    private KeyboardPanel keyboardPanel;
+
+    // -------- Rodapé --------
+    private JProgressBar progressBar;
+    private JLabel lblProgress;
+
+    // -------- Timer countdown --------
+    private Timer countdown;
+
+    // -------- Cores --------
+    private static final Color COL_CORRECT_FG = new Color( 27, 135,  50);
+    private static final Color COL_CORRECT_BG = new Color(220, 255, 220);
+    private static final Color COL_WRONG_FG   = new Color(180,  20,  20);
+    private static final Color COL_WRONG_BG   = new Color(255, 220, 220);
+    private static final Color COL_CURSOR_BG  = new Color(180, 220, 255);
+    private static final Color COL_NORMAL_FG  = new Color( 60,  60,  60);
+
+    private static final Font FONT_EXERCISE_BIG = new Font("Nunito Sans", Font.PLAIN, 36);
+    private static final Font FONT_INPUT_BIG    = new Font("Poppins",     Font.PLAIN, 28);
+
+    private static final java.util.Random RANDOM = new java.util.Random();
+
+    private static final String[] MSGS_CORRECT = {
+            "Muito bem!  Continue assim!",
+            "Isso aí!  Você está indo bem!",
+            "Perfeito!  Próxima letra!",
+            "Ótimo!  Continue no seu ritmo!",
+            "Show!  Você acertou!"
+    };
+
+    private static final String[] MSGS_WRONG = {
+            "Ops! Procure a tecla certa com calma.",
+            "Quase lá! Olhe o teclado e tente de novo.",
+            "Sem pressa, procure a tecla certinha.",
+            "Não desanime, respire e tente outra vez."
+    };
+
+    private static final String[] MSGS_3_STARS = {
+            "Perfeito! Você arrasou!",
+            "Excelente! Você é demais!",
+            "Incrível! Continue assim!",
+            "Sensacional! Está cada vez melhor!"
+    };
+
+    private static final String[] MSGS_2_STARS = {
+            "Muito bem! Ótimo trabalho!",
+            "Muito bom! Você está evoluindo!",
+            "Parabéns! Boa digitação!",
+            "Ótimo! Continue praticando!"
+    };
+
+    private static final String[] MSGS_1_STAR = {
+            "Bom início! Vai melhorar!",
+            "Você conseguiu! Continue tentando!",
+            "Foi um começo! Vamos praticar mais!",
+            "Está no caminho certo!"
+    };
+
+    private static final String[] MSGS_0_STARS = {
+            "Tente novamente, não desista!",
+            "Calma, vamos tentar de novo!",
+            "Não desanime, a prática leva à perfeição!",
+            "Respire e tente outra vez, você consegue!"
+    };
+
+    private static String pickRandom(String[] bank) {
+        return bank[RANDOM.nextInt(bank.length)];
+    }
+
+    public GamePanel(TypingGame game) { super(game); }
+
     @Override
-    protected void initialize() { // Método que organiza os componentes na tela
+    protected void initialize() {
         setLayout(new BorderLayout());
         setOpaque(false);
 
-        // Estrutura principal da página com imagem de fundo
-        JPanel content = new JPanel(new BorderLayout()) {
-            private final Image bgImage = new ImageIcon("ui/assets/background-image-gamepanel.png").getImage();
-            @Override
-            protected void paintComponent(Graphics g) {
-                g.drawImage(bgImage, 0, 0, getWidth(), getHeight(), this);
-            }
-        };
+        JPanel content = backgroundPanel("ui/assets/background-image-gamepanel.png");
         add(content, BorderLayout.CENTER);
 
-        content.add(buildTopBar(),    BorderLayout.NORTH);
-        content.add(buildSidebar(),   BorderLayout.EAST);
-        content.add(buildCenter(),    BorderLayout.CENTER);
+        content.add(buildTopBar(),          BorderLayout.NORTH);
+        content.add(buildSidebar(),         BorderLayout.EAST);
+        content.add(buildCenter(),          BorderLayout.CENTER);
         content.add(createFooterProgress(), BorderLayout.SOUTH);
     }
 
-    // Barra Superior com Gradiente
-    private JPanel buildTopBar() { // Cria o painel de status do topo
+    private JPanel buildTopBar() {
         GradientPanel bar = new GradientPanel(COLOR_PRIMARY, COLOR_PRIMARY, true);
-        bar.setPreferredSize(new Dimension(0, 100));
+        bar.setPreferredSize(new Dimension(0, 112));
         bar.setLayout(new BorderLayout(25, 0));
-        bar.setBorder(BorderFactory.createEmptyBorder(8, 40, 8, 40)); // Margens laterais aumentadas para 40
+        bar.setBorder(BorderFactory.createEmptyBorder(12, 40, 12, 40));
 
-        // Esquerda: nome (linha 1) + nível (linha 2)
-        JPanel left = new JPanel(new GridLayout(2, 1, 0, 1)); // Grade com 2 linhas e 1 coluna
-        left.setOpaque(false); // Deixa o fundo transparente para aparecer a cor da 'bar'
-        lblPlayerName = label("Jogador", FONT_INFO, Color.WHITE, SwingConstants.LEFT); // Cria label do nome
-        lblLevel      = label("Nível 1 — Iniciante", // Cria label do nível
-                FONT_SMALL, new Color(200, 225, 255), SwingConstants.LEFT);
-        left.add(lblPlayerName); // Adiciona nome ao painel esquerdo
-        left.add(lblLevel); // Adiciona nível ao painel esquerdo
+        JPanel left = new JPanel(new GridLayout(2, 1, 0, 1));
+        left.setOpaque(false);
+        lblPlayerName = label("Jogador",          FONT_INFO,  Color.WHITE,             SwingConstants.LEFT);
+        lblLevel      = label("Nível 1 — Iniciante", FONT_SMALL, new Color(200,225,255), SwingConstants.LEFT);
+        left.add(lblPlayerName);
+        left.add(lblLevel);
 
-        // Centro: vidas
-        lblLives = label("\u2764 \u2764 \u2764", FONT_HEARTS, new Color(255, 110, 110), SwingConstants.CENTER); // Cria corações
+        lblLives = label("\u2764 \u2764 \u2764", FONT_HEARTS, new Color(255,110,110), SwingConstants.CENTER);
 
-        // Direita: pontos (linha 1) + tempo (linha 2)
-        JPanel right = new JPanel(new GridLayout(2, 1, 0, 1)); // Grade com 2 linhas
-        right.setOpaque(false); // Fundo transparente
-        lblScore = label("0 pts", FONT_INFO, COLOR_GOLD, SwingConstants.RIGHT); // Label da pontuação
-        lblTimer = label("--s",   FONT_TIMER_BIG, Color.WHITE, SwingConstants.RIGHT); // Timer com destaque
-        right.add(lblScore); // Adiciona pontuação à direita
-        right.add(lblTimer); // Adiciona timer à direita
+        JPanel right = new JPanel(new GridBagLayout());
+        right.setOpaque(false);
+        right.setPreferredSize(new Dimension(370, 0));
+        lblScore = label("0 pts", FONT_INFO,      COLOR_GOLD,  SwingConstants.RIGHT);
+        lblTimer = label("--s",   FONT_TIMER_BIG, Color.WHITE, SwingConstants.RIGHT);
+        lblTimer.setPreferredSize(new Dimension(120, 44));
+        lblScore.setPreferredSize(new Dimension(110, 34));
 
-        bar.add(left,     BorderLayout.WEST); // Fixa as informações do jogador na esquerda
-        bar.add(lblLives, BorderLayout.CENTER); // Fixa as vidas no centro
-        bar.add(right,    BorderLayout.EAST); // Fixa o placar e tempo na direita
-        return bar; // Retorna o painel completo
+        btnPause = createModernButton("Pausar", new Color(255, 255, 255, 50));
+        btnPause.setForeground(Color.WHITE);
+        btnPause.setPreferredSize(new Dimension(110, 34));
+        btnPause.addActionListener(e -> pausarJogo());
+
+        GridBagConstraints rc = new GridBagConstraints();
+        rc.gridy = 0;
+        rc.fill = GridBagConstraints.NONE;
+        rc.anchor = GridBagConstraints.EAST;
+        rc.weightx = 0;
+        rc.gridx = 0; rc.insets = new Insets(0, 0, 0, 14);
+        right.add(lblScore, rc);
+        rc.gridx = 1; rc.insets = new Insets(0, 0, 0, 14);
+        right.add(lblTimer, rc);
+        rc.gridx = 2; rc.insets = new Insets(0, 0, 0, 0);
+        right.add(btnPause, rc);
+
+        bar.add(left,     BorderLayout.WEST);
+        bar.add(lblLives, BorderLayout.CENTER);
+        bar.add(right,    BorderLayout.EAST);
+        return bar;
     }
 
-    // Barra Lateral com RoundedPanels
     private JPanel buildSidebar() {
         JPanel side = new JPanel();
-        side.setLayout(new BoxLayout(side, BoxLayout.Y_AXIS)); // Empilhamento vertical
+        side.setLayout(new BoxLayout(side, BoxLayout.Y_AXIS));
         side.setOpaque(false);
-        side.setPreferredSize(new Dimension(250, 0)); // Aumentado para acomodar a margem maior
-        side.setBorder(BorderFactory.createEmptyBorder(16, 15, 25, 40)); // Margem inferior aumentada
+        side.setPreferredSize(new Dimension(250, 0));
+        side.setBorder(BorderFactory.createEmptyBorder(16, 15, 25, 40));
 
         JLabel title = label("SEU STATUS", FONT_SMALL, COLOR_SECONDARY, SwingConstants.LEFT);
         title.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         side.add(title);
         side.add(Box.createVerticalStrut(20));
-        side.add(sidebarCard("Pontos XP", lblSideXP = label("0", FONT_SUBTITLE, Color.WHITE, SwingConstants.CENTER), COLOR_ACCENT));
+        side.add(sidebarCard("Pontos XP",
+                lblSideXP     = label("0",  FONT_SUBTITLE, Color.WHITE, SwingConstants.CENTER), COLOR_ACCENT));
         side.add(Box.createVerticalStrut(15));
-        side.add(sidebarCard("Sequência", lblSideStreak = label("0x", FONT_SUBTITLE, Color.WHITE, SwingConstants.CENTER), COLOR_ACCENT));
+        side.add(sidebarCard("Sequência",
+                lblSideStreak = label("0x", FONT_SUBTITLE, Color.WHITE, SwingConstants.CENTER), COLOR_ACCENT));
         side.add(Box.createVerticalStrut(15));
-        side.add(sidebarCard("Nível Atual", lblSideLevel = label("1", FONT_SUBTITLE, Color.WHITE, SwingConstants.CENTER), COLOR_ACCENT));
-
+        side.add(sidebarCard("Exercício",
+                lblSideLevel  = label("1",  FONT_SUBTITLE, Color.WHITE, SwingConstants.CENTER), COLOR_ACCENT));
         side.add(Box.createVerticalStrut(20));
-        lblNextLevelHint = label("Faltam 10 para Nível 2", FONT_SMALL, COLOR_PRIMARY, SwingConstants.CENTER);
-        side.add(lblNextLevelHint);
+
+        RoundedPanel xpCard = new RoundedPanel(20, COLOR_ACCENT);
+        xpCard.setLayout(new BoxLayout(xpCard, BoxLayout.Y_AXIS));
+        xpCard.setBorder(BorderFactory.createEmptyBorder(10, 12, 10, 12));
+        xpCard.setMaximumSize(new Dimension(210, 80));
+
+        lblNextLevelHint = label("Nível 1 > 2", FONT_SMALL, Color.WHITE, SwingConstants.CENTER);
+        lblNextLevelHint.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        xpBar = new JProgressBar(0, 100);
+        xpBar.setValue(0);
+        xpBar.setForeground(COLOR_GOLD);
+        xpBar.setBackground(new Color(255, 255, 255, 60));
+        xpBar.setBorderPainted(false);
+        xpBar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 14));
+
+        xpCard.add(lblNextLevelHint);
+        xpCard.add(Box.createVerticalStrut(6));
+        xpCard.add(xpBar);
+        side.add(xpCard);
 
         return side;
     }
@@ -150,333 +252,358 @@ public class GamePanel extends BasePanel { // Define a classe que herda as cores
         return card;
     }
 
-    // ================================================================
-    //  Área Central (Área de Jogo)
-    // ================================================================
-    private JPanel buildCenter() { // Cria a área central onde a mágica acontece
-        JPanel center = new JPanel(new BorderLayout(0, 10)); // Painel central com bordas
+    private JPanel buildCenter() {
+        JPanel center = new JPanel(new BorderLayout(0, 8));
         center.setOpaque(false);
-        center.setBorder(BorderFactory.createEmptyBorder(16, 40, 25, 25)); // Margem inferior aumentada
+        center.setBorder(BorderFactory.createEmptyBorder(14, 40, 20, 20));
 
-        // Categoria + instruções
-        JPanel infoRow = new JPanel(new GridLayout(2, 1, 0, 4)); // Grade para textos informativos
-        infoRow.setOpaque(false); // Transparente
-        lblCategory     = label("Categoria", FONT_INFO, COLOR_PRIMARY, SwingConstants.CENTER); // Categoria do exercício
-        lblInstructions = label("Instruções", FONT_SMALL, new Color(80, 80, 80), SwingConstants.CENTER); // O que fazer
-        infoRow.add(lblCategory); // Adiciona categoria
-        infoRow.add(lblInstructions); // Adiciona instruções
-        center.add(infoRow, BorderLayout.NORTH); // Coloca as informações no topo do centro
+        JPanel infoRow = new JPanel(new GridLayout(2, 1, 0, 4));
+        infoRow.setOpaque(false);
+        lblCategory     = label("Categoria",  FONT_INFO,  COLOR_PRIMARY,        SwingConstants.CENTER);
+        lblInstructions = label("Instruções", FONT_SMALL, new Color(80, 80, 80), SwingConstants.CENTER);
+        infoRow.add(lblCategory);
+        infoRow.add(lblInstructions);
+        center.add(infoRow, BorderLayout.NORTH);
 
-        // Cartão de exibição do exercício
         RoundedPanel card = new RoundedPanel(40, Color.WHITE);
         card.setLayout(new BorderLayout());
-        card.setBorder(BorderFactory.createEmptyBorder(30, 40, 30, 40));
+        card.setBorder(BorderFactory.createEmptyBorder(24, 40, 16, 40));
 
-        txtExercise = new JTextPane(); // Componente de texto que permite estilos diferentes
-        txtExercise.setEditable(false); // Usuário não pode clicar e apagar o texto base
-        txtExercise.setFont(FONT_EXERCISE);
-        txtExercise.setBackground(COLOR_WHITE); // Fundo branco
-        txtExercise.setFocusable(false); // O foco do teclado nunca deve ficar aqui
-        txtExercise.setPreferredSize(new Dimension(0, 130)); // Altura fixa para o texto
+        txtExercise = new JTextPane();
+        txtExercise.setEditable(false);
+        txtExercise.setFont(FONT_EXERCISE_BIG);
+        txtExercise.setBackground(COLOR_WHITE);
+        txtExercise.setFocusable(false);
+        txtExercise.setPreferredSize(new Dimension(0, 90));
 
-        lblFeedback = label(" ", new Font("Nunito Sans", Font.BOLD, 20), COLOR_SUCCESS, SwingConstants.CENTER); // Feedback imediato
-        lblFeedback.setBorder(BorderFactory.createEmptyBorder(8, 0, 0, 0)); // Espaço acima da mensagem
+        lblFeedback = label(" ", new Font("Nunito Sans", Font.BOLD, 22),
+                COLOR_SUCCESS, SwingConstants.CENTER);
+        lblFeedback.setBorder(BorderFactory.createEmptyBorder(4, 0, 0, 0));
 
-        card.add(txtExercise, BorderLayout.CENTER); // Texto do exercício no meio do cartão
-        card.add(lblFeedback, BorderLayout.SOUTH); // Feedback no rodapé do cartão
-        center.add(card, BorderLayout.CENTER); // Cartão no meio da tela
+        JPanel cardSouth = new JPanel(new FlowLayout(FlowLayout.CENTER, 12, 0));
+        cardSouth.setOpaque(false);
+        cardSouth.add(lblFeedback);
 
-        // Linha de entrada (onde o usuário digita)
-        JPanel inputRow = new JPanel(new BorderLayout(10, 0)); // Painel para o campo de texto
-        inputRow.setOpaque(false); // Transparente
-        inputRow.setBorder(BorderFactory.createEmptyBorder(12, 0, 0, 0)); // Espaço acima
+        card.add(txtExercise, BorderLayout.CENTER);
+        card.add(cardSouth,   BorderLayout.SOUTH);
+        center.add(card, BorderLayout.CENTER);
 
-        JLabel promptLabel = label("Digite aqui:  ", FONT_BODY, COLOR_TEXT, SwingConstants.LEFT); // Texto de auxílio
-        promptLabel.setPreferredSize(new Dimension(165, 52)); // Largura fixa para alinhar com o campo
+        JPanel southSection = new JPanel(new BorderLayout(0, 6));
+        southSection.setOpaque(false);
 
-        txtInput = new JTextField(); // Campo de texto para entrada do usuário
-        txtInput.setFont(FONT_INPUT); // Fonte grande para facilitar a leitura
-        txtInput.setPreferredSize(new Dimension(0, 52)); // Altura confortável para o campo
-        // Estética moderna: Campo de entrada arredondado estilo "search bar"
+        keyboardPanel = new KeyboardPanel();
+        keyboardPanel.setPreferredSize(new Dimension(0, 165));
+        southSection.add(keyboardPanel, BorderLayout.CENTER);
+
+        JPanel inputRow = new JPanel(new BorderLayout(10, 0));
+        inputRow.setOpaque(false);
+        inputRow.setBorder(BorderFactory.createEmptyBorder(4, 0, 0, 0));
+
+        JLabel promptLabel = label("Digite aqui:  ", FONT_BODY, COLOR_TEXT, SwingConstants.LEFT);
+        promptLabel.setPreferredSize(new Dimension(165, 60));
+
+        txtInput = new JTextField();
+        txtInput.setFont(FONT_INPUT_BIG);
+        txtInput.setPreferredSize(new Dimension(0, 60));
         txtInput.putClientProperty("JTextField.placeholderText", "Comece a digitar aqui...");
         txtInput.putClientProperty("JComponent.roundRect", true);
 
-        txtInput.addKeyListener(new KeyAdapter() { // Escuta cada tecla pressionada
-            @Override public void keyReleased(KeyEvent e) { // Quando o usuário solta a tecla...
-                if (active) onInput(); // ...se o jogo estiver ativo, processa a entrada
+        txtInput.addKeyListener(new KeyAdapter() {
+            @Override public void keyReleased(KeyEvent e) {
+                if (paused) return;
+                if (active) onInput();
             }
         });
 
-        inputRow.add(promptLabel, BorderLayout.WEST); // Texto "Digite aqui" na esquerda
-        inputRow.add(txtInput,    BorderLayout.CENTER); // Campo de texto no resto da linha
-        center.add(inputRow, BorderLayout.SOUTH); // Coloca a linha de entrada embaixo
+        inputRow.add(promptLabel, BorderLayout.WEST);
+        inputRow.add(txtInput,    BorderLayout.CENTER);
+        southSection.add(inputRow, BorderLayout.SOUTH);
+        center.add(southSection, BorderLayout.SOUTH);
 
-        return center; // Retorna a área central completa
+        return center;
     }
 
-    // Rodapé moderno com progresso
     private JPanel createFooterProgress() {
         GradientPanel bar = new GradientPanel(COLOR_ACCENT, COLOR_ACCENT, false);
-        bar.setPreferredSize(new Dimension(0, 85)); // Aumentado para comportar a margem inferior
+        bar.setPreferredSize(new Dimension(0, 85));
         bar.setLayout(new BorderLayout(15, 0));
-        bar.setBorder(BorderFactory.createEmptyBorder(10, 40, 25, 40)); // Margem inferior aumentada para 25
+        bar.setBorder(BorderFactory.createEmptyBorder(10, 40, 25, 40));
 
-        lblProgress = label("Exercicio 1 de 47", FONT_SMALL, Color.WHITE, SwingConstants.LEFT);
-        lblProgress.setPreferredSize(new Dimension(200, 24)); // Tamanho fixo
+        lblProgress = label("Exercicio 1 de 8", FONT_SMALL, Color.WHITE, SwingConstants.LEFT);
+        lblProgress.setPreferredSize(new Dimension(200, 24));
 
-        progressBar = new JProgressBar(0, 100); // Barra visual de progresso
+        progressBar = new JProgressBar(0, 100);
         progressBar.setForeground(Color.WHITE);
         progressBar.setBackground(new Color(255, 255, 255, 60));
         progressBar.setBorderPainted(false);
-        progressBar.setPreferredSize(new Dimension(0, 18)); // Altura da barra
+        progressBar.setPreferredSize(new Dimension(0, 18));
 
         JButton menuBtn = createModernButton("Sair", new Color(255, 255, 255, 40));
         menuBtn.setForeground(Color.WHITE);
         menuBtn.setPreferredSize(new Dimension(100, 40));
         menuBtn.addActionListener(e -> goMenu());
 
-        bar.add(lblProgress,  BorderLayout.WEST); // Progresso na esquerda
-        bar.add(progressBar,  BorderLayout.CENTER); // Barra no centro
-        bar.add(menuBtn,      BorderLayout.EAST); // Botão na direita
-        return bar; // Retorna o rodapé
+        bar.add(lblProgress, BorderLayout.WEST);
+        bar.add(progressBar, BorderLayout.CENTER);
+        bar.add(menuBtn,     BorderLayout.EAST);
+        return bar;
     }
 
-    // ================================================================
-    //  API Pública chamada pelo TypingGame
-    // ================================================================
-    public void startGame(Player p) {
-        this.player = p;
-
-        this.exercises =
-                ExerciseFactory.createCampaign();
-
+    public void startGame(Player p, int campaignLvl) {
+        this.player        = p;
+        this.campaignLevel = campaignLvl;
+        // Encadeia todos os módulos a partir do escolhido até o 5
+        this.exercises = new java.util.ArrayList<>();
+        for (int lvl = campaignLvl; lvl <= 5; lvl++) {
+            this.exercises.addAll(ExerciseFactory.createExercisesForLevel(lvl));
+        }
         this.exerciseIndex = 0;
         loadExercise();
     }
+    public void startGame(Player p) { startGame(p, 1); }
 
-    public void nextExercise() {
-
+    public boolean nextExercise() {
         exerciseIndex++;
-
         if (exerciseIndex >= exercises.size()) {
-
             game.showFinalLevelResult(player);
-
-            return;
+            return false;
         }
-
         loadExercise();
+        return true;
     }
 
-    // ================================================================
-    //  Carregamento do Exercício
-    // ================================================================
-    private void loadExercise() { // Prepara a interface para um novo exercício
-        if (exercises == null || exercises.isEmpty()) return; // Proteção contra lista vazia
+    private void loadExercise() {
+        if (exercises == null || exercises.isEmpty()) return;
 
-        current   = exercises.get(exerciseIndex); // Pega o exercício atual da lista
-        timeLeft  = current.getTimeLimit(); // Define o tempo baseado no nível do exercício
-        active    = true; // Ativa a lógica de digitação
-        startTime = System.currentTimeMillis(); // Marca a hora de início para cálculos de velocidade
+        current      = exercises.get(exerciseIndex);
+        timeLeft     = current.getTimeLimit();
+        active       = true;
 
-        refreshTopBar(); // Atualiza os pontos e vidas no topo
-        lblCategory.setText(current.getCategory()    + "  -  " + current.getDescription()); // Atualiza título
-        lblInstructions.setText(current.getInstructions()); // Atualiza instruções
+        startTime = System.currentTimeMillis();
 
-        int total = exercises.size(); // Total de exercícios disponíveis
-        lblProgress.setText("Exercicio " + (exerciseIndex + 1) + " de " + total); // Atualiza texto de progresso
-        progressBar.setValue((int)((double) exerciseIndex / total * 100)); // Atualiza barra visual de progresso
+        refreshTopBar();
+        lblCategory.setText(current.getCategory() + "  -  " + current.getDescription());
+        lblInstructions.setText(current.getInstructions());
 
-        txtInput.setText(""); // Limpa o que estava digitado antes
-        txtInput.setEnabled(true); // Garante que o usuário possa digitar
-        setFeedback(" ", COLOR_SUCCESS); // Limpa mensagens de feedback
-        renderTarget(""); // Renderiza o texto do exercício sem nenhuma cor de acerto/erro ainda
+        int total = exercises.size();
+        lblProgress.setText("Exercicio " + (exerciseIndex + 1) + " de " + total);
+        progressBar.setValue((int)((double) exerciseIndex / total * 100));
 
-        if (countdown != null && countdown.isRunning()) countdown.stop(); // Para o cronômetro antigo se houver
-        countdown = new Timer(1000, e -> tickTimer()); // Cria um novo cronômetro que "bate" a cada 1 segundo
-        countdown.start(); // Inicia o tempo
+        txtInput.setText("");
+        txtInput.setEnabled(true);
+        setFeedback(" ", COLOR_SUCCESS);
+        renderTarget("");
 
-        SwingUtilities.invokeLater(() -> txtInput.requestFocusInWindow()); // Foca o cursor no campo de texto automaticamente
-    }
-
-    // ================================================================
-    //  Cronômetro
-    // ================================================================
-    private void tickTimer() { // Executado a cada 1 segundo
-        timeLeft--; // Diminui um segundo
-        Color timerColor = timeLeft <= 10 ? COLOR_DANGER // Se faltar 10s, fica vermelho (alerta)
-                : timeLeft <= 20 ? COLOR_WARNING // Se faltar 20s, fica laranja
-                : Color.WHITE; // Caso contrário, fica branco
-        lblTimer.setText(timeLeft + "s"); // Atualiza o texto do tempo na tela
-        lblTimer.setForeground(timerColor); // Aplica a cor de alerta
-        if (timeLeft <= 0) onTimeUp(); // Se o tempo acabar, chama o fim do exercício
-    }
-
-    private void onTimeUp() { // Quando o tempo acaba
-        if (!active) return; // Se já terminou, não faz nada
-        long elapsed = System.currentTimeMillis() - startTime; // Calcula quanto tempo passou
-        finishExercise("Tempo esgotado! Não desanime!", COLOR_DANGER, 0, 0, 0, (int)(elapsed / 1000)); // Finaliza com 0 estrelas
-    }
-
-    // ================================================================
-    //  Processamento da Digitação
-    // ================================================================
-    private void onInput() { // Chamado cada vez que uma tecla é solta no campo de entrada
-        String typed  = txtInput.getText(); // Pega o que o usuário digitou
-        String target = current.getTargetText(); // Pega o que o usuário DEVERIA ter digitado
-
-        // Impede de digitar além do tamanho da frase alvo
-        if (typed.length() > target.length()) { // Se digitou demais...
-            typed = typed.substring(0, target.length()); // ...corta o excesso
-            txtInput.setText(typed); // ...e atualiza o campo
+        if (!current.getTargetText().isEmpty()) {
+            char firstCh = current.getTargetText().charAt(0);
+            keyboardPanel.highlightCurrentKey(firstCh, baseVowel(firstCh), false);
         }
 
-        renderTarget(typed); // Re-desenha o texto do exercício com as cores atualizadas
+        if (countdown != null && countdown.isRunning()) countdown.stop();
 
-        if (!typed.isEmpty()) { // Se houver algo digitado
-            char last     = typed.charAt(typed.length() - 1); // Pega a última letra digitada
-            char expected = target.charAt(typed.length() - 1); // Pega a letra que deveria ser a correta
-            if (last == expected) { // Se acertou a letra...
-                setFeedback("Muito bem!  Continue assim!", COLOR_SUCCESS); // ...mostra incentivo em verde
-            } else { // Se errou a letra...
-                setFeedback("Ops! Procure a tecla certa com calma.", COLOR_DANGER); // ...orienta em vermelho
+        countdown = new Timer(1000, e -> tickTimer());
+        countdown.start();
+
+        SwingUtilities.invokeLater(() -> txtInput.requestFocusInWindow());
+    }
+
+    private void tickTimer() {
+        timeLeft--;
+        lblTimer.setText(timeLeft + "s");
+        lblTimer.setForeground(timeLeft <= 10 ? COLOR_DANGER
+                : timeLeft <= 20 ? COLOR_WARNING
+                  : Color.WHITE);
+        if (timeLeft <= 0) onTimeUp();
+    }
+
+    private void onTimeUp() {
+        if (!active) return;
+        long elapsed = System.currentTimeMillis() - startTime;
+        finishExercise("Tempo esgotado! Não desanime!", COLOR_DANGER, 0, 0, 0, (int)(elapsed / 1000));
+    }
+
+    private void onInput() {
+        String typed  = txtInput.getText();
+        String target = current.getTargetText();
+
+        if (typed.length() > target.length()) {
+            typed = typed.substring(0, target.length());
+            txtInput.setText(typed);
+        }
+
+        renderTarget(typed);
+
+        if (!typed.isEmpty()) {
+            char last     = typed.charAt(typed.length() - 1);
+            char expected = target.charAt(typed.length() - 1);
+            boolean correct = (last == expected);
+
+            setFeedback(
+                    correct ? pickRandom(MSGS_CORRECT) : pickRandom(MSGS_WRONG),
+                    correct ? COLOR_SUCCESS : COLOR_DANGER
+            );
+
+            if (!correct) {
+                keyboardPanel.highlightCurrentKey('\0', '\0', true);
+            } else if (typed.length() < target.length()) {
+                char nextCh = target.charAt(typed.length());
+                keyboardPanel.highlightCurrentKey(nextCh, baseVowel(nextCh), false);
             }
-        } else { // Se o campo estiver vazio
-            setFeedback(" ", COLOR_SUCCESS); // Limpa o feedback
+        } else {
+            setFeedback(" ", COLOR_SUCCESS);
+            if (!target.isEmpty()) {
+                char firstCh = target.charAt(0);
+                keyboardPanel.highlightCurrentKey(firstCh, baseVowel(firstCh), false);
+            }
         }
 
-        renderTarget(typed); // Re-desenha o texto do exercício com as cores atualizadas
-
-        if (typed.length() == target.length()) { // Se terminou de digitar a frase inteira
-            checkCompletion(typed, target); // Verifica o resultado final
-        }
+        if (typed.length() == target.length()) checkCompletion(typed, target);
     }
 
-    private void checkCompletion(String typed, String target) { // Verifica os acertos finais e termina
-        if (!active) return; // Proteção contra execuções duplas
-        active = false; // Desativa a entrada de dados
-        if (countdown != null) countdown.stop(); // Para o cronômetro
+    private void checkCompletion(String typed, String target) {
+        if (!active) return;
+        active = false;
+        if (countdown != null) countdown.stop();
 
-        long elapsed    = System.currentTimeMillis() - startTime; // Calcula o tempo total gasto
-        int  correct    = countCorrect(typed, target); // Conta quantas letras estão certas
-        double acc      = (double) correct / target.length(); // Calcula a precisão (0.0 a 1.0)
-        int  stars      = current.calculateStars(acc, elapsed); // Calcula as estrelas (0 a 3)
-        int  xp         = current.calculateScore(correct, target.length(), elapsed); // Calcula o XP ganho
-        int  timeSeconds = (int)(elapsed / 1000); // Converte tempo gasto para segundos
-        int  words      = target.trim().split("\\s+").length; // Conta as palavras da frase
-        double minutes  = Math.max(elapsed / 60000.0, 1.0 / 60.0); // Converte tempo para minutos (mínimo 1 seg)
-        int  wpm        = (int) Math.round(words / minutes); // Calcula Palavras Por Minuto (WPM/PPM)
+        long   elapsed     = System.currentTimeMillis() - startTime;
+        int    correct     = countCorrect(typed, target);
+        double acc         = (double) correct / target.length();
+        int    stars       = current.calculateStars(acc, elapsed);
+        int    xp          = current.calculateScore(correct, target.length(), elapsed);
+        int    timeSeconds = (int)(elapsed / 1000);
+        int    words       = target.trim().split("\\s+").length;
+        double minutes     = Math.max(elapsed / 60000.0, 1.0 / 60.0);
+        int    wpm         = (int) Math.round(words / minutes);
 
-        String msg; Color col; // Variáveis para a mensagem final de incentivo
-        if (stars == 3) { msg = "Perfeito! Você arrasou!";         col = COLOR_SUCCESS;         }
-        else if (stars == 2) { msg = "Muito bem! Ótimo trabalho!"; col = new Color(0, 140, 80); }
-        else if (stars == 1) { msg = "Bom início! Vai melhorar!";  col = COLOR_WARNING;         }
-        else                 { msg = "Tente novamente, não desista!"; col = COLOR_DANGER;        }
+        String msg; Color col;
+        if      (stars == 3) { msg = pickRandom(MSGS_3_STARS); col = COLOR_SUCCESS;         }
+        else if (stars == 2) { msg = pickRandom(MSGS_2_STARS); col = new Color(0, 140, 80); }
+        else if (stars == 1) { msg = pickRandom(MSGS_1_STAR);  col = COLOR_WARNING;         }
+        else                 { msg = pickRandom(MSGS_0_STARS); col = COLOR_DANGER;          }
 
-        finishExercise(msg, col, stars, xp, wpm, timeSeconds); // Envia os dados para o encerramento
+        finishExercise(msg, col, stars, xp, wpm, timeSeconds);
     }
 
-    private void finishExercise(String msg, Color col, int stars, int xp, int wpm, int timeSeconds) { // Finaliza e mostra tela de resultado
-        active = false; // Garante que o jogo está parado
-        if (countdown != null) countdown.stop(); // Garante que o cronômetro parou
-        txtInput.setEnabled(false); // Bloqueia o campo de digitação
-        setFeedback(msg, col); // Mostra a mensagem final no centro
+    private void finishExercise(String msg, Color col, int stars, int xp, int wpm, int timeSeconds) {
+        active = false;
+        if (countdown != null) countdown.stop();
 
-        if (stars == 0) { // Se não ganhou nenhuma estrela (falha)
-            player.loseLife(); // O jogador perde uma vida
-        } else { // Se ganhou ao menos uma estrela (sucesso)
-            player.addXP(xp); // Adiciona os pontos de experiência
-            player.completeExercise(); // Incrementa o contador de exercícios feitos e a sequência
-        }
+        setFeedback(msg, col);
 
-        refreshTopBar(); // Atualiza os corações e pontos no topo para refletir a mudança
+        if (stars == 0) player.loseLife();
+        else { player.addXP(xp); player.completeExercise(); }
 
-        int fs = stars, fx = xp, fw = wpm, ft = timeSeconds; // Variáveis finais para o timer
-        Timer delay = new Timer(900, e -> // Cria um pequeno atraso de 0.9s antes de mudar de tela
-                game.showResult(player, fs, fx, current.getDescription(), fw, ft) // Mostra a tela de resultado
-        );
-        delay.setRepeats(false); // O timer só deve rodar uma vez
-        delay.start(); // Inicia o atraso
+        refreshTopBar();
+        player.saveToFile("ranking.txt");
+        txtInput.setEnabled(false);
+        game.showResult(player, stars, xp, current.getDescription(), wpm, timeSeconds);
     }
 
-    // ================================================================
-    //  Renderização Estilizada (Coloração letra por letra)
-    // ================================================================
-    private void renderTarget(String typed) { // Método crítico que pinta as letras na tela
-        StyledDocument doc = txtExercise.getStyledDocument(); // Pega o "documento" do componente de texto
-        try {
-            doc.remove(0, doc.getLength()); // Limpa todo o texto atual para desenhar do zero
-        } catch (BadLocationException ex) { /* ignorado */ }
+    private void renderTarget(String typed) {
+        StyledDocument doc = txtExercise.getStyledDocument();
+        try { doc.remove(0, doc.getLength()); } catch (BadLocationException ex) { /* ignorado */ }
 
-        String target = current.getTargetText(); // A frase correta
+        String target = current.getTargetText();
 
-        for (int i = 0; i < target.length(); i++) { // Percorre cada letra da frase alvo
-            SimpleAttributeSet as = new SimpleAttributeSet(); // Cria um conjunto de estilos (cor, fonte)
-            StyleConstants.setFontFamily(as, "Nunito Sans"); // Define a fonte Nunito Sans para o exercício
-            StyleConstants.setFontSize(as, 28); // Define o tamanho grande
+        for (int i = 0; i < target.length(); i++) {
+            SimpleAttributeSet as = new SimpleAttributeSet();
+            StyleConstants.setFontFamily(as, "Nunito Sans");
+            StyleConstants.setFontSize(as, 36);
 
-            if (i < typed.length()) { // Se esta letra já foi digitada pelo usuário
-                if (typed.charAt(i) == target.charAt(i)) { // Se o que ele digitou está certo...
-                    StyleConstants.setForeground(as, COL_CORRECT_FG); // ...pinta a letra de verde escuro
-                    StyleConstants.setBackground(as, COL_CORRECT_BG); // ...e o fundo de verde claro
-                } else { // Se o que ele digitou está errado...
-                    StyleConstants.setForeground(as, COL_WRONG_FG); // ...pinta a letra de vermelho
-                    StyleConstants.setBackground(as, COL_WRONG_BG); // ...e o fundo de rosa
+            if (i < typed.length()) {
+                if (typed.charAt(i) == target.charAt(i)) {
+                    StyleConstants.setForeground(as, COL_CORRECT_FG);
+                    StyleConstants.setBackground(as, COL_CORRECT_BG);
+                } else {
+                    StyleConstants.setForeground(as, COL_WRONG_FG);
+                    StyleConstants.setBackground(as, COL_WRONG_BG);
                 }
-            } else if (i == typed.length()) { // Se esta é a PRÓXIMA letra que ele deve digitar
-                StyleConstants.setForeground(as, COL_NORMAL_FG); // Cor de texto normal
-                StyleConstants.setBackground(as, COL_CURSOR_BG); // Fundo azul para servir de cursor visual
-            } else { // Letras que ele ainda vai chegar lá
-                StyleConstants.setForeground(as, COL_NORMAL_FG); // Cor cinza normal
-                StyleConstants.setBackground(as, COLOR_WHITE); // Fundo branco normal
+            } else if (i == typed.length()) {
+                StyleConstants.setForeground(as, COL_NORMAL_FG);
+                StyleConstants.setBackground(as, COL_CURSOR_BG);
+            } else {
+                StyleConstants.setForeground(as, COL_NORMAL_FG);
+                StyleConstants.setBackground(as, COLOR_WHITE);
             }
 
             try {
-                doc.insertString(doc.getLength(), String.valueOf(target.charAt(i)), as); // Insere a letra com o estilo definido
+                doc.insertString(doc.getLength(), String.valueOf(target.charAt(i)), as);
             } catch (BadLocationException ex) { /* ignorado */ }
         }
 
-        // Centralizar todo o texto dentro do JTextPane
-        SimpleAttributeSet center = new SimpleAttributeSet(); // Cria estilo de parágrafo
-        StyleConstants.setAlignment(center, StyleConstants.ALIGN_CENTER); // Define alinhamento centralizado
-        doc.setParagraphAttributes(0, doc.getLength(), center, false); // Aplica a centralização em todo o texto
+        SimpleAttributeSet center = new SimpleAttributeSet();
+        StyleConstants.setAlignment(center, StyleConstants.ALIGN_CENTER);
+        doc.setParagraphAttributes(0, doc.getLength(), center, false);
     }
 
-    // ================================================================
-    //  Ajudantes (Helpers)
-    // ================================================================
-    private void refreshTopBar() { // Atualiza as informações visuais no topo
-        if (player == null) return; // Proteção
-        lblPlayerName.setText(player.getName()); // Nome do jogador
-        lblLevel.setText("Nível " + player.getGameLevel() + " — " + player.getLevelName()); // Nível atual
-        lblScore.setText(player.getTotalScore() + " pts"); // Pontos totais
-        lblLives.setText(heartsString(player.getLives())); // Converte número de vidas em corações (♥ ♥ ♥)
-        lblLives.setForeground(player.getLives() <= 1 ? COLOR_DANGER : new Color(255, 110, 110)); // Vidas críticas em vermelho escuro
-        lblTimer.setText(timeLeft + "s"); // Tempo restante
-        lblTimer.setForeground(Color.WHITE); // Cor base do tempo
+    private void refreshTopBar() {
+        if (player == null) return;
+        lblPlayerName.setText(player.getName());
 
-        // Atualiza a nova barra lateral
+        lblLevel.setText("Nível " + player.getGameLevel() + " — " + player.getLevelName());
+
+        lblScore.setText(player.getTotalScore() + " pts");
+        lblLives.setText(heartsString(player.getLives()));
+        lblLives.setForeground(player.getLives() <= 1 ? COLOR_DANGER : new Color(255, 110, 110));
+        lblTimer.setText(timeLeft + "s");
+        lblTimer.setForeground(Color.WHITE);
+
         lblSideXP.setText(String.valueOf(player.getTotalScore()));
         lblSideLevel.setText(String.valueOf(exerciseIndex + 1));
         lblSideStreak.setText(player.getStreak() + "x");
-    }
 
-    private void setFeedback(String msg, Color color) { // Atalho para mudar a mensagem de feedback
-        lblFeedback.setText(msg); // Define o texto
-        lblFeedback.setForeground(color); // Define a cor
-    }
+        int progress = player.getXpProgress();
+        xpBar.setValue(progress);
 
-    private int countCorrect(String typed, String target) { // Conta letras corretas
-        int n = 0; // Começa com zero
-        for (int i = 0; i < Math.min(typed.length(), target.length()); i++) { // Compara até o limite do digitado
-            if (typed.charAt(i) == target.charAt(i)) n++; // Se bater, soma um
+        int xpLevel = player.getGameLevel();
+        if (xpLevel >= 5) {
+            lblNextLevelHint.setText("Nível máximo atingido!");
+        } else {
+            int xpNeeded = player.getXpForNextLevel() - player.getXp();
+            lblNextLevelHint.setText("Nível " + xpLevel + " > " + (xpLevel + 1) + "  (" + xpNeeded + " XP)");
         }
-        return n; // Retorna o total
     }
 
-    private void goMenu() { // Volta para a tela inicial
-        if (countdown != null && countdown.isRunning()) countdown.stop(); // Garante que o tempo pare ao sair
-        active = false; // Desativa o jogo
-        game.returnToMenu(); // Chama o método de navegação da janela principal
+    private void setFeedback(String msg, Color color) {
+        lblFeedback.setText(msg);
+        lblFeedback.setForeground(color);
+    }
+
+    private char baseVowel(char c) {
+        switch (c) {
+            case '\u00e1': case '\u00c1': return 'a'; // á Á
+            case '\u00e9': case '\u00c9': return 'e'; // é É
+            case '\u00ed': case '\u00cd': return 'i'; // í Í
+            case '\u00f3': case '\u00d3': return 'o'; // ó Ó
+            case '\u00fa': case '\u00da': return 'u'; // ú Ú
+            case '\u00e0': case '\u00c0': return 'a'; // à À
+            case '\u00e8': case '\u00c8': return 'e'; // è È
+            case '\u00ec': case '\u00cc': return 'i'; // ì Ì
+            case '\u00f2': case '\u00d2': return 'o'; // ò Ò
+            case '\u00f9': case '\u00d9': return 'u'; // ù Ù
+            case '\u00e2': case '\u00c2': return 'a'; // â Â
+            case '\u00ea': case '\u00ca': return 'e'; // ê Ê
+            case '\u00ee': case '\u00ce': return 'i'; // î Î
+            case '\u00f4': case '\u00d4': return 'o'; // ô Ô
+            case '\u00fb': case '\u00db': return 'u'; // û Û
+            case '\u00e3': case '\u00c3': return 'a'; // ã Ã
+            case '\u00f5': case '\u00d5': return 'o'; // õ Õ
+            case '\u00f1': case '\u00d1': return 'n'; // ñ Ñ
+            default: return '\0';
+        }
+    }
+
+    private int countCorrect(String typed, String target) {
+        int n = 0;
+        for (int i = 0; i < Math.min(typed.length(), target.length()); i++) {
+            if (typed.charAt(i) == target.charAt(i)) n++;
+        }
+        return n;
+    }
+
+    private void goMenu() {
+        if (countdown != null && countdown.isRunning()) countdown.stop();
+        active = false;
+        game.returnToMenu();
     }
 }

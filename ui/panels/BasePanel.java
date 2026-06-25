@@ -46,6 +46,26 @@ public abstract class BasePanel extends JPanel {
 
     protected abstract void initialize();
 
+    protected JPanel backgroundPanel(String imagePath) {
+        return new BackgroundPanel(imagePath);
+    }
+
+    protected static class BackgroundPanel extends JPanel {
+        private final Image bgImage;
+
+        public BackgroundPanel(String imagePath) {
+            this.bgImage = new ImageIcon(imagePath).getImage();
+            setLayout(new BorderLayout());
+            setOpaque(true);
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            g.drawImage(bgImage, 0, 0, getWidth(), getHeight(), this);
+        }
+    }
+
     protected static class RoundedPanel extends JPanel {
         private int radius;
         private Color shadowColor = new Color(0, 0, 0, 20);
