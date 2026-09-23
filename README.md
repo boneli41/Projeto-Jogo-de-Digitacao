@@ -1,152 +1,116 @@
-# Digita Comigo — Sistema de Ensino de Digitação para Idosos
+# Digita Comigo — Site Multi-página (HTML/CSS/JS puro)
 
-A inclusão digital de pessoas idosas passa, antes de qualquer outra coisa, por uma barreira simples e muitas vezes esquecida: saber onde estão as teclas e como usá-las com confiança. Para quem nunca teve contato extenso com um teclado, tarefas básicas como escrever uma mensagem, preencher um formulário ou buscar uma informação online podem se tornar desafios desproporcionalmente grandes — não pela falta de capacidade, mas pela falta de prática guiada e paciente.
+Reestruturação da versão web do jogo (que antes era um SPA em React) para uma arquitetura
+tradicional de site: cada tela é uma página `.html` de verdade, com um único `.css` e um único
+`.js` compartilhados. O projeto React original continua intacto em
+`Projeto-Jogo-de-Digitacao-main/` — este aqui é uma base nova, construída a partir dele.
 
-O **Digita Comigo** nasceu como um projeto acadêmico para enfrentar exatamente esse problema. A proposta é oferecer um ambiente de prática de digitação pensado do zero para o público idoso: textos grandes e legíveis, ritmo sem pressão excessiva, feedback imediato e visual, e uma progressão que celebra cada pequena vitória em vez de punir o erro. Em vez de um manual técnico sobre como digitar, o sistema se comporta como um jogo — com pontos, vidas, sequências e níveis — porque a gamificação ajuda a manter o interesse e transforma a repetição necessária para aprender em algo mais leve e motivador.
-
-A aplicação foi construída inteiramente em Java com Swing, e é organizada em módulos de dificuldade crescente — começando pelas letras minúsculas e avançando até pontuação — que o próprio jogador pode escolher por onde começar, respeitando seu ritmo e familiaridade prévia com o teclado.
-
-## Como Executar
-
-### Pré-requisito
-
-Java JDK 17 ou superior instalado (testado com JDK 26).
-Verificar com: `java -version`
-
-### Windows
+## Estrutura
 
 ```
-compilar.bat    ← compila todos os arquivos .java
-executar.bat    ← inicia o jogo
+Projeto-Jogo-de-Digitacao-html/
+├── backend/                  Node + Express — API de exercícios/ranking e serve o site
+│   ├── src/
+│   │   ├── server.js          rotas da API + express.static(../site)
+│   │   ├── db.js               SQLite (ranking.db)
+│   │   ├── game/exerciseFactory.js
+│   │   └── routes/{exercises.js, ranking.js}
+│   └── data/exercises/*.txt   as 5 listas de frases
+├── site/                     o site em si — HTML/CSS/JS puro
+│   ├── index.html             página inicial (menu)
+│   ├── jogo.html               tela de digitação
+│   ├── resultado.html          tela de resultado
+│   ├── style.css               TODO o CSS do site
+│   ├── script.js                TODA a lógica (menu, jogo, resultado, API, teclado, sons)
+│   └── assets/*.png            imagens
+└── executar.bat              atalho de 2 cliques
 ```
 
-### Terminal (qualquer SO)
+## Como rodar
+
+Requer Node.js 22+ (usa `node:sqlite`, sem dependências de compilação).
+
+### Atalho (Windows)
+
+Dê dois cliques em **`executar.bat`** — ele instala as dependências (só na primeira vez), sobe o
+servidor numa janela e abre `http://localhost:3001` no navegador.
+
+### Manual
 
 ```bash
-# Compilar
-javac -d out -encoding UTF-8 \
-  Main.java \
-  model/Player.java model/Exercise.java \
-  model/LetterExercise.java model/WordExercise.java model/SentenceExercise.java \
-  factory/ExerciseFactory.java \
-  ui/TypingGame.java \
-  ui/panels/BasePanel.java ui/panels/KeyboardPanel.java \
-  ui/panels/MenuPanel.java ui/panels/GamePanel.java ui/panels/ResultPanel.java
-
-# Executar
-java -cp out Main
+cd backend
+npm install
+npm run dev
 ```
 
-> O jogo tenta carregar o **FlatLaf** (look & feel moderno) em tempo de execução, caso a biblioteca esteja disponível no classpath. Se não estiver, ele continua funcionando normalmente com o Look & Feel padrão do Swing.
+Abra `http://localhost:3001` no navegador. **Não existe mais servidor de frontend separado** —
+o mesmo Node que serve a API (`/api/...`) também serve os arquivos do site (`site/`), então tudo
+roda numa porta só, sem CORS pra se preocupar.
 
-## Funcionalidades
+## Como a navegação funciona
 
-### Gamificação
+Diferente da versão React (SPA), aqui cada tela é uma página HTML separada — clicar em "Iniciar"
+ou "Próximo Desafio" navega de verdade para outro arquivo (`jogo.html`, `resultado.html`). Como
+o JavaScript reinicia a cada página carregada, o estado da partida (jogador, exercícios, índice
+atual) é salvo em `sessionStorage` antes de cada navegação, e lido de volta assim que a próxima
+página carrega. Um `localStorage` separado guarda o autosave de recuperação (fechar a aba,
+bateria acabar).
 
-| Elemento | Descrição |
-|---|---|
-| Estrelas (★★★) | Avaliação de 0 a 3 estrelas por exercício (precisão + velocidade) |
-| XP e Níveis | Cada exercício concluído rende pontos; acumular XP sobe o nível de habilidade |
-| Vidas (♥♥♥) | Três vidas; perde uma ao terminar com 0 estrelas ou esgotar o tempo |
-| Sequência | Contador de exercícios completados sem perder vida |
-| Conquistas | Medalhas desbloqueadas por marcos (ex: "Primeiro Passo", "Imparável") |
-| Módulos | Cinco categorias de prática, escolhidas livremente no menu antes de começar |
+## O que tem
 
-### Módulos de Prática
+Tudo que já existia na versão React foi portado para este formato multi-página:
 
-O jogador escolhe por qual módulo começar, direto no menu inicial. Ao escolher um módulo, a campanha segue dele até o final (módulo 5):
+- Campanha de exercícios (5 módulos × 8 frases), com escolha de módulo inicial no menu
+- XP, estrelas, vidas, sequência — mesmas fórmulas do Java original
+- Teclado visual ABNT2, destacando a próxima tecla em tempo real
+- Referência estática do teclado ("Conheça o Teclado") no menu
+- Pausar/Continuar durante o jogo
+- Barra de progresso de XP na lateral
+- Sons (Web Audio, sem arquivos externos) com liga/desliga
+- Tema claro/escuro
+- Autosave (recuperação após fechar a aba)
+- Confirmação ao sair da partida
+- Atalhos: `Esc` sai, `Enter` avança no resultado (que também avança sozinho em 5s)
+- Bloqueio de início/avanço duplo
+- Ranking real, persistido em SQLite
 
-| Módulo | Categoria | Ícone no menu |
-|---|---|---|
-| 1 | Minúsculas | abc |
-| 2 | Maiúsculas | ABC |
-| 3 | Números | 123 |
-| 4 | Acentos | áéí |
-| 5 | Pontuação | .,! |
+## Sobre a campanha encadeada (Módulo 1 de 5 / Exercício 1 de 8)
 
-### Progressão de Nível (XP)
+Ao escolher um módulo no menu (ex: "Números"), a campanha não fica só nesses 8 exercícios — ela
+segue automaticamente por esse módulo e todos os seguintes até o 5º (Números → Acentos →
+Pontuação = 24 exercícios seguidos, por exemplo). É por isso que aparecem dois contadores ao
+mesmo tempo: o de cima (`Módulo X de Y — Exercício N de 8 do módulo`) mostra o progresso dentro
+do módulo atual, e o de baixo (`Exercicio N de 24/40`) mostra o progresso na campanha inteira.
 
-Em paralelo ao módulo escolhido, o jogador acumula XP que define seu nível de habilidade, exibido na barra superior:
+Essa é uma escolha de design, não uma limitação técnica — a API (`GET /api/exercises/campaign?startLevel=`)
+só devolve o que o front pede; ela poderia devolver apenas os 8 exercícios de um módulo se o
+front pedisse assim. O motivo de ter sido feito encadeado foi seguir o que o próprio README do
+projeto original já descrevia ("a campanha segue dele até o final") e o que uma versão revisada
+do `GamePanel.java` (encontrada em paralelo, com o teclado visual) já implementava.
 
-| Nível | Nome | XP necessário |
-|---|---|---|
-| 1 | Iniciante | 0 |
-| 2 | Aprendiz | 800 |
-| 3 | Intermediário | 1.700 |
-| 4 | Avançado | 2.700 |
-| 5 | Especialista | 3.800 |
+## Correções feitas depois da primeira versão
 
-### Teclado Visual
+- **Aviso de "sair da página" aparecendo entre exercícios** — o `beforeunload` do navegador
+  disparava em qualquer troca de tela, inclusive quando o próprio jogo navegava sozinho (fim de
+  exercício → resultado, avanço automático → próximo exercício). Corrigido com uma flag
+  (`leavingIntentionally`) que só deixa o aviso nativo aparecer quando o usuário tenta fechar a
+  aba por conta própria — clicar em "Sair"/`Esc` continua pedindo confirmação normalmente, só que
+  por um `confirm()` próprio, não pelo aviso do navegador.
+- **Ranking não salvava ao sair direto do jogo** — só era salvo saindo pela tela de resultado.
+  Corrigido: `Sair`/`Esc` agora também grava o resultado antes de voltar ao menu.
 
-Um teclado ABNT2 é desenhado na tela do jogo, destacando em tempo real apenas a **próxima tecla** que o jogador precisa pressionar:
+## Onde está cada coisa no código
 
-- 🟩 **Verde** — próxima tecla, sem Shift
-- 🟨 **Amarelo** — próxima tecla, com Shift (maiúsculas, símbolos e alguns acentos)
-- 🟥 **Vermelho** — Backspace, aceso quando o jogador erra a tecla esperada
+Como tudo mora num arquivo só por tipo, aqui vai um mapa de `script.js` (numerado em blocos
+comentados dentro do próprio arquivo):
 
-Para acentos (ex: `ã`, `é`, `ô`), o teclado destaca a tecla-morta correspondente junto com a vogal-base, já que digitar um acento em ABNT2 exige dois toques em sequência.
-
-Um segundo teclado, com anotações explicando cada tecla especial (Shift, Tab, Enter, Caps Lock, etc.), pode ser aberto a qualquer momento pelo menu, clicando em "Conheça o Teclado".
-
-### Tela de Resultado
-
-Após cada exercício são exibidos:
-
-- Avaliação em estrelas
-- Pontuação total, sequência e vidas restantes
-- PPM — Palavras Por Minuto digitadas
-- Tempo — duração formatada em m:ss
-- Nível atual de XP
-
-O avanço para o próximo exercício acontece de três formas, todas disponíveis ao mesmo tempo: automaticamente após 5 segundos, pressionando **Enter**, ou clicando no botão **Próximo**.
-
-### Ranking
-
-A pontuação de cada jogador é salva localmente em `ranking.txt`. O menu exibe o top 3 em um card, e um clique nele abre um diálogo com o ranking completo.
-
-### Feedback em Tempo Real
-
-Cada letra digitada recebe coloração instantânea na frase exibida:
-
-- 🟢 Verde — letra correta
-- 🔴 Vermelho — letra errada
-- 🔵 Azul claro — posição atual do cursor
-
-## Mecânica do Jogo
-
-### Como ganhar pontos
-
-```
-XP = recompensa_base × precisão × (1 + bônus_velocidade)
-```
-
-- **Precisão** = letras corretas ÷ total de letras (0% a 100%)
-- **Bônus de velocidade** = até +50% para quem termina antes da metade do tempo
-
-### Como ganhar estrelas
-
-| Estrelas | Condição |
-|---|---|
-| ★★★ | Precisão ≥ 95% e tempo usado ≤ 70% do limite |
-| ★★ | Precisão ≥ 80% |
-| ★ | Precisão ≥ 60% |
-| Sem estrela | Precisão < 60% ou tempo esgotado |
-
-### Como perder vida
-
-O jogador perde 1 vida (♥) ao terminar um exercício com 0 estrelas (erro excessivo ou tempo esgotado). Com 0 vidas, o jogo é encerrado e é necessário voltar ao menu para recomeçar.
-
-## Tecnologias
-
-| Item | Detalhe |
-|---|---|
-| Linguagem | Java |
-| Interface | Java Swing, com suporte opcional ao FlatLaf |
-| Layout | CardLayout, BorderLayout, GridLayout, BoxLayout, GridBagLayout |
-| Texto estilizado | JTextPane + StyledDocument (coloração letra a letra) |
-| Padrão de projeto | Factory Method (`ExerciseFactory`) |
-| Codificação | UTF-8 (suporte completo a caracteres acentuados) |
-
-## Objetivo
-
-Promover a inclusão digital de pessoas idosas, facilitando o uso de computadores por meio do desenvolvimento da habilidade de digitação.
+1. Lógica do jogo (XP, estrelas, vidas)
+2. Teclado visual ABNT2 (layout + destaque de tecla)
+3. Sons
+4. Tema claro/escuro
+5. Estado entre páginas (sessionStorage + autosave)
+6. Chamadas à API
+7. Página Menu (`initMenu`)
+8. Página Jogo (`initGame`)
+9. Página Resultado (`initResult`)
+10. Dispatch — decide qual `init` chamar, baseado em `<body data-page="...">`

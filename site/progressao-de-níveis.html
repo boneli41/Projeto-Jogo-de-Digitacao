@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Digita Comigo — Novo nível desbloqueado</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body data-page="progression">
+  <div class="page">
+    <div id="progression-bg" class="bg-layer"></div>
+    <div class="scene-overlay"></div>
+    <div class="page-content progression-content">
+      <header class="result-header">Sua jornada nos níveis</header>
+      <main class="result-center-wrap progression-center">
+        <section class="rounded-card result-card progression-card" aria-labelledby="progression-title">
+          <div class="stars has-stars" aria-hidden="true">★ ★ ★</div>
+          <p id="progression-player" class="progression-player"></p>
+          <h1 id="progression-title" class="progression-title"></h1>
+          <p id="progression-completed" class="progression-completed"></p>
+          <div class="progression-lesson">
+            <span id="progression-icon" class="progression-icon" aria-hidden="true"></span>
+            <h2 id="progression-learning"></h2>
+            <p id="progression-description"></p>
+          </div>
+          <p id="progression-tip" class="progression-tip"></p>
+          <p id="progression-countdown" class="auto-advance-hint" role="timer" aria-live="off"></p>
+        </section>
+      </main>
+      <footer class="result-footer">
+        <button id="btn-progression-continue" class="btn-modern progression-continue" aria-describedby="progression-countdown">CONTINUAR &gt;</button>
+      </footer>
+    </div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>

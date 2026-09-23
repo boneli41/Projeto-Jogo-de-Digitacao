@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Digita Comigo — Aprenda a Digitar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body data-page="menu">
+  <div class="page">
+    <div id="menu-bg" class="bg-layer"></div>
+    <div class="scene-overlay"></div>
+
+    <div class="page-content">
+      <div class="top-row">
+        <button id="btn-sound" class="btn-modern icon-btn" title="Ligar/desligar sons">🔊 Som</button>
+        <button id="btn-theme" class="btn-modern icon-btn" title="Alternar tema claro/escuro">🌙 Escuro</button>
+      </div>
+
+      <div id="resume-banner" class="resume-banner hidden">
+        <span>Você tinha uma partida em andamento. Quer continuar de onde parou?</span>
+        <div style="display:flex;gap:10px;">
+          <button id="btn-resume" class="btn-modern" style="background:var(--color-success)">Continuar</button>
+          <button id="btn-discard-resume" class="btn-modern" style="background:var(--color-btn-back)">Começar do zero</button>
+        </div>
+      </div>
+
+      <div class="menu-main">
+        <div class="menu-left">
+          <img class="logo" src="assets/logo-digita-comigo.png" alt="Digita Comigo" />
+
+          <div class="rounded-card welcome-card">
+            <div class="title">Bem-vindo(a)!</div>
+            <div class="body">Um jogo feito para ajudar você a aprender de forma leve e divertida.</div>
+          </div>
+
+          <div class="journey-card">
+            <div class="title">Sua Jornada nos Níveis</div>
+            <div class="hint">Escolha por onde começar</div>
+            <div id="journey-grid" class="journey-grid"></div>
+          </div>
+        </div>
+
+        <div class="menu-center">
+          <div class="rounded-card form-card">
+            <h2>Como você se chama?</h2>
+            <input id="name-input" type="text" class="name-input" placeholder="Ex: João" autofocus />
+            <button id="btn-start" class="btn-modern start-btn">INICIAR</button>
+            <img class="illustration" src="assets/image-menupanel.png" alt="" />
+          </div>
+        </div>
+
+        <div class="menu-right">
+          <div id="rank-card" class="rounded-card rank-card" title="Ver ranking completo">
+            <div class="title">Mini Ranking</div>
+            <div id="rank-content"></div>
+          </div>
+
+          <div class="rounded-card info-card">
+            <b>POR QUE APRENDER?</b>
+            <div>• Autonomia Digital</div>
+            <div>• Confiança</div>
+          </div>
+
+          <div id="keyboard-card" class="rounded-card keyboard-card">
+            <div class="kc-title">CONHEÇA O TECLADO</div>
+            <div class="kc-desc">Entenda a posição das teclas antes de começar!</div>
+            <div class="kc-link">→ Ver teclado</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="menu-footer">Aqui todo mundo aprende! Respeite seu tempo e divirta-se!</div>
+    </div>
+
+    <div id="ranking-modal" class="modal-backdrop hidden">
+      <div class="rounded-card modal">
+        <h3>Ranking Completo</h3>
+        <div id="ranking-modal-content"></div>
+        <button id="btn-close-ranking" class="btn-modern modal-close">Fechar</button>
+      </div>
+    </div>
+
+    <div id="keyboard-modal" class="modal-backdrop hidden">
+      <div class="rounded-card keyboard-modal">
+        <h3>⌨️ Conheça o Teclado</h3>
+        <div class="shift-hint">
+          <b>Como usar o SHIFT:</b> pressione e <b>segure</b> a tecla <b>Shift</b> (canto inferior
+          esquerdo ou direito) e, enquanto segura, pressione a outra tecla. Use para
+          <b>letras maiúsculas</b> e símbolos como <b>! @ # $ % &amp; *</b>.
+        </div>
+        <div id="keyboard-reference-board" class="keyboard-modal-board"></div>
+        <div class="legend-grid">
+          <div><b>Tab</b> — avança de campo</div>
+          <div><b>Caps Lock</b> — fixa maiúsculas</div>
+          <div><b>Apagar</b> — apaga o último caractere</div>
+          <div><b>Enter</b> — confirma / avança linha</div>
+          <div><b>´ / `</b> — agudo (áéíóú) / crase (à)</div>
+          <div><b>~ / ^</b> — til (ãõ) / circunflexo com Shift (âêô)</div>
+        </div>
+        <button id="btn-close-keyboard" class="btn-modern modal-close">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

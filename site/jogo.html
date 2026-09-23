@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Digita Comigo — Jogando</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body data-page="game">
+  <div class="page">
+    <div id="game-bg" class="bg-layer"></div>
+    <div class="scene-overlay"></div>
+
+    <div class="page-content">
+      <div class="game-topbar">
+        <div>
+          <div id="player-name" class="player-name"></div>
+          <div id="level-small" class="level-small"></div>
+        </div>
+        <div id="hearts" class="hearts"></div>
+        <div class="topbar-right">
+          <div>
+            <div id="score-text" class="score-text"></div>
+            <div id="timer-text" class="timer-text"></div>
+          </div>
+          <button id="btn-pause" class="btn-modern pause-btn">Pausar</button>
+        </div>
+      </div>
+
+      <div class="module-stepper">
+        <span id="module-label-left" class="module-stepper-label"></span>
+        <div id="module-dots" class="module-dots"></div>
+        <span id="module-label-right" class="module-stepper-label"></span>
+      </div>
+
+      <div class="game-body">
+        <div class="game-center">
+          <div class="info-row">
+            <div id="category" class="category"></div>
+            <div id="instructions" class="instructions"></div>
+          </div>
+
+          <div id="time-progress" class="time-progress" role="progressbar" aria-label="Tempo decorrido do desafio" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <div id="time-progress-fill" class="time-progress-fill"></div>
+          </div>
+
+          <div class="rounded-card exercise-card">
+            <div id="exercise-text" class="exercise-text"></div>
+            <div id="feedback" class="feedback"></div>
+          </div>
+
+          <div id="keyboard-container" class="keyboard-wrap"></div>
+
+          <div class="input-row">
+            <label class="prompt-label">Digite aqui:</label>
+            <input id="game-input" type="text" class="game-input" placeholder="Comece a digitar aqui..." autocomplete="off" spellcheck="false" />
+          </div>
+        </div>
+
+        <div class="sidebar">
+          <div class="sidebar-title">SEU STATUS</div>
+          <div class="side-card"><div class="title">Pontos XP</div><div id="side-xp" class="value"></div></div>
+          <div class="side-card"><div class="title">Sequência</div><div id="side-streak" class="value"></div></div>
+          <div class="side-card"><div class="title">Exercício</div><div id="side-exercise" class="value"></div></div>
+          <div class="xp-card">
+            <div id="xp-hint" class="hint"></div>
+            <div class="xp-track"><div id="xp-fill" class="xp-fill"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="game-footer">
+        <div id="progress-label" class="progress-label"></div>
+        <div class="progress-track"><div id="progress-fill" class="progress-fill"></div></div>
+        <button id="btn-exit" class="btn-modern exit-btn" title="Esc">Sair (Esc)</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
