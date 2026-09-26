@@ -16,8 +16,8 @@
 
     <div class="page-content">
       <div class="top-row">
-        <button id="btn-sound" class="btn-modern icon-btn" title="Ligar/desligar sons">🔊 Som</button>
-        <button id="btn-theme" class="btn-modern icon-btn" title="Alternar tema claro/escuro">🌙 Escuro</button>
+        <button id="btn-sound" class="btn-modern icon-btn" title="Ligar/desligar sons">Som ligado</button>
+        <button id="btn-theme" class="btn-modern icon-btn" title="Alternar tema claro/escuro">Escuro</button>
       </div>
 
       <div id="resume-banner" class="resume-banner hidden">
@@ -38,34 +38,37 @@
           </div>
 
           <div class="journey-card">
-            <div class="title">Sua Jornada nos Níveis</div>
-            <div class="hint">Escolha por onde começar</div>
+            <div class="title">Sua Jornada nos Módulos</div>
+            <div class="hint">Escolha por onde começar — 8 frases por módulo</div>
             <div id="journey-grid" class="journey-grid"></div>
           </div>
         </div>
 
         <div class="menu-center">
           <div class="rounded-card form-card">
-            <h2>Como você se chama?</h2>
-            <input id="name-input" type="text" class="name-input" placeholder="Ex: João" autofocus />
+            <h2><label for="name-input">Como você se chama?</label></h2>
+            <div class="name-field">
+              <svg class="name-field-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7" r="4"/><path d="M4 22v-3a8 8 0 0 1 16 0v3z"/></svg>
+              <input id="name-input" type="text" class="name-input" placeholder="Ex: João" autocomplete="given-name" autofocus />
+            </div>
             <button id="btn-start" class="btn-modern start-btn">INICIAR</button>
             <img class="illustration" src="assets/image-menupanel.png" alt="" />
           </div>
         </div>
 
         <div class="menu-right">
-          <div id="rank-card" class="rounded-card rank-card" title="Ver ranking completo">
+          <div id="rank-card" class="rounded-card rank-card" role="button" tabindex="0" title="Ver ranking completo" aria-label="Ver ranking completo">
             <div class="title">Mini Ranking</div>
             <div id="rank-content"></div>
           </div>
 
           <div class="rounded-card info-card">
             <b>POR QUE APRENDER?</b>
-            <div>• Autonomia Digital</div>
-            <div>• Confiança</div>
-          </div>
+            <div>Autonomia Digital</div>
+            <div>Confiança</div>
+            </div>
 
-          <div id="keyboard-card" class="rounded-card keyboard-card">
+          <div id="keyboard-card" class="rounded-card keyboard-card" role="button" tabindex="0" aria-label="Conheça o teclado">
             <div class="kc-title">CONHEÇA O TECLADO</div>
             <div class="kc-desc">Entenda a posição das teclas antes de começar!</div>
             <div class="kc-link">→ Ver teclado</div>
@@ -73,8 +76,9 @@
         </div>
       </div>
 
-      <div class="menu-footer">Aqui todo mundo aprende! Respeite seu tempo e divirta-se!</div>
     </div>
+
+    <footer class="menu-footer">Aqui todo mundo aprende! Respeite seu tempo e divirta-se!</footer>
 
     <div id="ranking-modal" class="modal-backdrop hidden">
       <div class="rounded-card modal">
@@ -86,7 +90,7 @@
 
     <div id="keyboard-modal" class="modal-backdrop hidden">
       <div class="rounded-card keyboard-modal">
-        <h3>⌨️ Conheça o Teclado</h3>
+        <h3>Conheça o Teclado</h3>
         <div class="shift-hint">
           <b>Como usar o SHIFT:</b> pressione e <b>segure</b> a tecla <b>Shift</b> (canto inferior
           esquerdo ou direito) e, enquanto segura, pressione a outra tecla. Use para

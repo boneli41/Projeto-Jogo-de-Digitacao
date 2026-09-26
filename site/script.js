@@ -10,15 +10,9 @@
    ============================================================ */
 
 const MAX_LIVES = 3;
-const XP_THRESHOLD = [0, 100, 300, 600, 1000, 1500];
-const LEVEL_NAMES = { 1: "Iniciante", 2: "Aprendiz", 3: "Intermediário", 4: "Avançado", 5: "Especialista" };
 
 function createPlayer(name) {
-  return { name, lives: MAX_LIVES, totalScore: 0, gameLevel: 1, xp: 0, exercisesCompleted: 0, streak: 0, achievements: [] };
-}
-
-function checkLevelUp(player) {
-  while (player.gameLevel < 5 && player.xp >= XP_THRESHOLD[player.gameLevel]) player.gameLevel++;
+  return { name, lives: MAX_LIVES, totalScore: 0, exercisesCompleted: 0, streak: 0, achievements: [] };
 }
 
 function checkAchievements(player) {
@@ -32,9 +26,7 @@ function checkAchievements(player) {
 }
 
 function addXP(player, amount) {
-  player.xp += amount;
   player.totalScore += amount;
-  checkLevelUp(player);
   checkAchievements(player);
 }
 
@@ -59,19 +51,6 @@ function recordSessionStats(player, { seconds, typed, target, stars = 0, complet
   stats.attempts += completed ? 1 : 0;
   stats.bestStreak = Math.max(stats.bestStreak, player.streak);
   stats.modules += moduleCompleted ? 1 : 0;
-}
-function getLevelName(player) { return LEVEL_NAMES[player.gameLevel] || "Iniciante"; }
-
-function getXpForNextLevel(player) {
-  if (player.gameLevel >= 5) return XP_THRESHOLD[5];
-  return XP_THRESHOLD[player.gameLevel];
-}
-
-function getXpProgress(player) {
-  const prev = player.gameLevel > 1 ? XP_THRESHOLD[player.gameLevel - 1] : 0;
-  const next = getXpForNextLevel(player);
-  if (next === prev) return 100;
-  return Math.round(((player.xp - prev) / (next - prev)) * 100);
 }
 
 function calculateScore(correctChars, totalChars, timeUsedMs, xpReward, timeLimit) {
@@ -338,6 +317,28 @@ function applyTheme(theme) {
   localStorage.setItem(THEME_KEY, theme);
 }
 
+function initThemeControl() {
+  const button = document.getElementById("btn-theme");
+  if (!button) return;
+  button.type = "button";
+  button.classList.add("theme-toggle");
+  function render() {
+    const dark = getTheme() === "dark";
+    const label = dark ? "Claro" : "Escuro";
+    const shape = dark
+      ? '<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/>'
+      : '<path d="M20.5 13A8.5 8.5 0 0 1 11 3.5 8.5 8.5 0 1 0 20.5 13Z"/>';
+    button.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${shape}</svg><span>${label}</span>`;
+    button.setAttribute("aria-label", `Ativar modo ${label.toLowerCase()}`);
+    button.title = `Ativar modo ${label.toLowerCase()}`;
+  }
+  button.addEventListener("click", () => {
+    applyTheme(getTheme() === "dark" ? "light" : "dark");
+    render();
+  });
+  render();
+}
+
 /* ============================================================
    5. ESTADO ENTRE PÁGINAS
    sessionStorage: estado da partida atual (perdido ao fechar a aba)
@@ -393,13 +394,15 @@ async function apiFetchRankingFull() {
   return res.json();
 }
 async function apiPostResult(player) {
+  const state = loadSession();
   const res = await fetch(`/api/ranking`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       name: player.name,
       totalScore: player.totalScore,
-      gameLevel: player.gameLevel,
+      // Compatibilidade com o ranking: o campo antigo agora representa o módulo atual.
+      gameLevel: state?.exercises?.[state.exerciseIndex]?.moduleNumber || 1,
       streak: player.streak,
       exercisesCompleted: player.exercisesCompleted,
     }),
@@ -418,11 +421,11 @@ async function saveResultIfAny(player) {
    ============================================================ */
 
 const MODULES = [
-  { level: 1, icon: "abc", name: "Minúsculas" },
-  { level: 2, icon: "ABC", name: "Maiúsculas" },
-  { level: 3, icon: "123", name: "Números" },
-  { level: 4, icon: "áéí", name: "Acentos" },
-  { level: 5, icon: ".,!", name: "Pontuação" },
+  { moduleNumber: 1, icon: "abc", name: "Minúsculas" },
+  { moduleNumber: 2, icon: "ABC", name: "Maiúsculas" },
+  { moduleNumber: 3, icon: "123", name: "Números" },
+  { moduleNumber: 4, icon: "áéí", name: "Acentos" },
+  { moduleNumber: 5, icon: ".,!", name: "Pontuação" },
 ];
 
 const PROGRESSION_PAGE = "progressao-de-níveis.html";
@@ -438,7 +441,7 @@ function getUpcomingModule(state) {
   const current = state.exercises?.[state.exerciseIndex];
   const next = state.exercises?.[state.exerciseIndex + 1];
   if (!current || !next || current.moduleNumber === next.moduleNumber) return null;
-  return MODULES.find((module) => module.level === next.moduleNumber) || null;
+  return MODULES.find((module) => module.moduleNumber === next.moduleNumber) || null;
 }
 
 function showProgression(state) {
@@ -452,7 +455,6 @@ function initMenu() {
   applyTheme(getTheme());
 
   const btnSound = document.getElementById("btn-sound");
-  const btnTheme = document.getElementById("btn-theme");
   const nameInput = document.getElementById("name-input");
   const btnStart = document.getElementById("btn-start");
   const journeyGrid = document.getElementById("journey-grid");
@@ -468,26 +470,32 @@ function initMenu() {
   const keyboardModal = document.getElementById("keyboard-modal");
   const btnCloseKeyboard = document.getElementById("btn-close-keyboard");
   const keyboardReferenceBoard = document.getElementById("keyboard-reference-board");
+  [rankCard, keyboardCard].forEach((card) => {
+    card.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        card.click();
+      }
+    });
+  });
 
-  let selectedLevel = 1;
+  let selectedModule = 1;
   let starting = false;
 
-  function renderSoundBtn() { btnSound.textContent = isSoundEnabled() ? "🔊 Som" : "🔇 Som"; }
-  function renderThemeBtn() { btnTheme.textContent = getTheme() === "dark" ? "☀️ Claro" : "🌙 Escuro"; }
+  function renderSoundBtn() { btnSound.textContent = isSoundEnabled() ? "Som ligado" : "Som desligado"; }
   renderSoundBtn();
-  renderThemeBtn();
 
   btnSound.addEventListener("click", () => { setSoundEnabled(!isSoundEnabled()); renderSoundBtn(); });
-  btnTheme.addEventListener("click", () => { applyTheme(getTheme() === "dark" ? "light" : "dark"); renderThemeBtn(); });
 
   function renderJourney() {
     journeyGrid.innerHTML = "";
     MODULES.forEach((m) => {
       const btn = document.createElement("button");
-      btn.className = "journey-item" + (m.level === selectedLevel ? " active" : "");
+      btn.className = "journey-item" + (m.moduleNumber === selectedModule ? " active" : "");
       btn.title = `Começar em: ${m.name}`;
+      btn.setAttribute("aria-pressed", String(m.moduleNumber === selectedModule));
       btn.innerHTML = `<span class="icon">${m.icon}</span><span>${m.name}</span>`;
-      btn.addEventListener("click", () => { selectedLevel = m.level; renderJourney(); });
+      btn.addEventListener("click", () => { selectedModule = m.moduleNumber; renderJourney(); });
       journeyGrid.appendChild(btn);
     });
   }
@@ -541,7 +549,7 @@ function initMenu() {
     btnStart.textContent = "CARREGANDO...";
 
     try {
-      const exercises = await apiFetchCampaign(selectedLevel);
+      const exercises = await apiFetchCampaign(selectedModule);
       const player = createPlayer(name);
       saveSession({ player, exercises, exerciseIndex: 0, resultData: null });
       window.location.href = "jogo.html";
@@ -586,12 +594,10 @@ function initGame() {
 
   let { player, exercises, exerciseIndex } = state;
   let current = exercises[exerciseIndex];
-  const total = exercises.length;
   const isLastOfModule = current.indexInModule === current.totalInModule;
 
   const els = {
     playerName: document.getElementById("player-name"),
-    levelSmall: document.getElementById("level-small"),
     hearts: document.getElementById("hearts"),
     scoreText: document.getElementById("score-text"),
     timerText: document.getElementById("timer-text"),
@@ -599,21 +605,12 @@ function initGame() {
     timeProgressFill: document.getElementById("time-progress-fill"),
     btnPause: document.getElementById("btn-pause"),
     moduleLabelLeft: document.getElementById("module-label-left"),
-    moduleDots: document.getElementById("module-dots"),
     moduleLabelRight: document.getElementById("module-label-right"),
-    category: document.getElementById("category"),
-    instructions: document.getElementById("instructions"),
     exerciseText: document.getElementById("exercise-text"),
     feedback: document.getElementById("feedback"),
     keyboardContainer: document.getElementById("keyboard-container"),
     input: document.getElementById("game-input"),
-    sideXp: document.getElementById("side-xp"),
     sideStreak: document.getElementById("side-streak"),
-    sideExercise: document.getElementById("side-exercise"),
-    xpHint: document.getElementById("xp-hint"),
-    xpFill: document.getElementById("xp-fill"),
-    progressLabel: document.getElementById("progress-label"),
-    progressFill: document.getElementById("progress-fill"),
     btnExit: document.getElementById("btn-exit"),
   };
 
@@ -625,56 +622,77 @@ function initGame() {
   let countdownInterval = null;
   let leavingIntentionally = false; // true quando a própria página navega (não é o usuário fechando a aba)
 
+  const avatarButton = document.getElementById("profile-avatar");
+  const avatars = [
+    { id: "profile-1", label: "perfil 1" },
+    { id: "profile-2", label: "perfil 2" },
+    { id: "profile-3", label: "perfil 3" },
+    { id: "profile-4", label: "perfil 4" },
+  ];
+  const avatarStorageKey = `digita-comigo-avatar:${player.name.trim().toLocaleLowerCase("pt-BR")}`;
+  let avatarIndex = 0;
+  try {
+    const savedAvatar = localStorage.getItem(avatarStorageKey);
+    avatarIndex = Math.max(0, avatars.findIndex((avatar) => avatar.id === savedAvatar));
+  } catch { /* Usa o primeiro perfil quando o armazenamento não estiver disponível. */ }
+  function renderAvatar() {
+    const avatar = avatars[avatarIndex];
+    avatarButton.dataset.avatar = avatar.id;
+    avatarButton.setAttribute("aria-label", `Avatar: ${avatar.label}. Trocar foto de perfil (${avatarIndex + 1} de ${avatars.length})`);
+    avatarButton.title = `Foto ${avatarIndex + 1} de ${avatars.length}: ${avatar.label}. Clique para trocar`;
+  }
+  avatarButton.addEventListener("click", () => {
+    avatarIndex = (avatarIndex + 1) % avatars.length;
+    renderAvatar();
+    try { localStorage.setItem(avatarStorageKey, avatars[avatarIndex].id); } catch { /* Mantém a escolha nesta página. */ }
+  });
+  renderAvatar();
+
   function renderTopBar() {
     els.playerName.textContent = player.name;
-    els.levelSmall.textContent = `Nível ${player.gameLevel} — ${getLevelName(player)}`;
     els.hearts.textContent = heartsString(player.lives);
     els.scoreText.textContent = `${player.totalScore} pts`;
     const elapsedPercent = Math.max(0, Math.min(100, (1 - timeLeft / current.timeLimit) * 100));
+    const remainingPercent = 100 - elapsedPercent;
     const timerColor = elapsedPercent <= 50 ? "#22c55e" : elapsedPercent <= 90 ? "#facc15" : "#ef4444";
     els.timerText.textContent = `${timeLeft}s`;
     els.timerText.style.color = timerColor;
-    els.timeProgressFill.style.width = `${elapsedPercent}%`;
+    els.timeProgressFill.style.width = `${remainingPercent}%`;
     els.timeProgressFill.style.backgroundColor = timerColor;
-    els.timeProgress.setAttribute("aria-valuenow", String(Math.round(elapsedPercent)));
+    els.timeProgress.setAttribute("aria-valuenow", String(Math.round(remainingPercent)));
     els.timeProgress.setAttribute("aria-valuetext", `${timeLeft} segundos restantes`);
   }
 
   function renderModuleStepper() {
-    els.moduleLabelLeft.textContent = `Módulo ${current.moduleIndex} de ${current.totalModules} — ${current.category}`;
-    els.moduleLabelRight.textContent = `Exercício ${current.indexInModule} de ${current.totalInModule} do módulo`;
-    els.moduleDots.innerHTML = "";
-    for (let i = 1; i <= current.totalModules; i++) {
-      const dot = document.createElement("span");
-      dot.className = "module-dot" + (i === current.moduleIndex ? " active" : i < current.moduleIndex ? " done" : "");
-      els.moduleDots.appendChild(dot);
-    }
+    els.moduleLabelLeft.textContent = `Módulo ${current.moduleNumber} de ${MODULES.length} — ${current.category}`;
+    els.moduleLabelRight.textContent = `Frase ${current.indexInModule} de ${current.totalInModule}`;
   }
 
   function renderSidebar() {
-    els.sideXp.textContent = player.totalScore;
     els.sideStreak.textContent = `${player.streak}x`;
-    els.sideExercise.textContent = exerciseIndex + 1;
-    els.xpHint.textContent = player.gameLevel >= 5 ? "Nível máximo atingido!" : `Nível ${player.gameLevel} > ${player.gameLevel + 1}`;
-    els.xpFill.style.width = `${Math.max(0, Math.min(100, getXpProgress(player)))}%`;
   }
 
-  function renderFooter() {
-    els.progressLabel.textContent = `Exercicio ${exerciseIndex + 1} de ${total}`;
-    els.progressFill.style.width = `${Math.round((exerciseIndex / total) * 100)}%`;
-  }
-
-  function renderExerciseText() {
+  function renderExerciseText(animatedIndex = -1) {
     const target = current.targetText;
-    els.exerciseText.innerHTML = "";
+    // Preserve as letras para não interromper animações durante a digitação rápida.
+    if (els.exerciseText.textContent !== target) {
+      els.exerciseText.replaceChildren(...Array.from({ length: target.length }, (_, i) => {
+        const span = document.createElement("span");
+        span.textContent = target[i];
+        span.addEventListener("animationend", () => span.classList.remove("letter-pop", "letter-shake"));
+        return span;
+      }));
+    }
     for (let i = 0; i < target.length; i++) {
       const ch = target[i];
-      const span = document.createElement("span");
-      span.textContent = ch === " " ? " " : ch;
-      if (i < typed.length) span.className = typed[i] === ch ? "correct" : "wrong";
-      else if (i === typed.length) span.className = "cursor";
-      else span.className = "normal";
-      els.exerciseText.appendChild(span);
+      const span = els.exerciseText.children[i];
+      span.classList.remove("correct", "wrong", "cursor", "normal");
+      span.classList.add(i < typed.length ? (typed[i] === ch ? "correct" : "wrong") : i === typed.length ? "cursor" : "normal");
+      if (i === animatedIndex && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        span.classList.remove("letter-pop", "letter-shake");
+        void span.offsetWidth;
+        span.classList.add(typed[i] === ch ? "letter-pop" : "letter-shake");
+      }
     }
   }
 
@@ -828,8 +846,14 @@ function initGame() {
     }
     const grew = value.length > typed.length;
     const shrank = value.length < typed.length;
+    let animatedIndex = -1;
+    if (!shrank) {
+      for (let i = 0; i < value.length; i++) {
+        if (value[i] !== typed[i]) animatedIndex = i;
+      }
+    }
     typed = value;
-    renderExerciseText();
+    renderExerciseText(animatedIndex);
 
     if (shrank) playErase();
 
@@ -869,9 +893,6 @@ function initGame() {
 
     renderTopBar();
     renderModuleStepper();
-    els.category.textContent = `${current.category} - ${current.description}`;
-    els.instructions.textContent = current.instructions;
-    renderFooter();
     renderSidebar();
     renderExerciseText();
 
@@ -922,7 +943,6 @@ function initResult() {
   set("stat-lives", heartsString(player.lives));
   set("stat-score", player.totalScore + " pts");
   set("stat-streak", player.streak + "x");
-  set("stat-level", getLevelName(player));
   set("stat-time", seconds === null ? "?" : Math.floor(seconds / 60) + ":" + String(Math.floor(seconds % 60)).padStart(2, "0"));
   set("stat-wpm", seconds > 0 ? Math.round((stats.correct / 5) / (seconds / 60)) + " ppm" : "?");
   set("stat-completed", player.exercisesCompleted);
@@ -932,7 +952,7 @@ function initResult() {
   set("stat-modules", stats ? stats.modules : "?");
   set("stat-characters", stats ? stats.correct + " / " + stats.characters : "?");
   const message = state.endReason === "completed"
-    ? "Parabéns, " + player.name + "! Você concluiu sua jornada!"
+    ? "Parabéns, " + player.name + "! Você concluiu o módulo de Pontuação e finalizou sua jornada!"
     : isGameOver(player) ? "Suas vidas acabaram, mas cada prática conta. Confira seu progresso!"
     : "Muito bem, " + player.name + "! Confira o resultado da sua sessão.";
   set("result-message", message);
@@ -952,7 +972,7 @@ function initResult() {
 }
 
 /* ============================================================
-   10. PÁGINA: PROGRESSÃO ENTRE NÍVEIS
+   10. PÁGINA: PROGRESSÃO ENTRE MÓDULOS
    ============================================================ */
 
 function initProgression() {
@@ -964,12 +984,12 @@ function initProgression() {
     return;
   }
 
-  const lesson = MODULE_LESSONS[nextModule.level];
+  const lesson = MODULE_LESSONS[nextModule.moduleNumber];
   document.getElementById("progression-player").textContent = `Parabéns, ${state.player.name}!`;
-  document.getElementById("progression-title").textContent = `VOCÊ DESBLOQUEOU O ${lesson.ordinal} NÍVEL!`;
-  document.getElementById("progression-completed").textContent = `Nível ${state.exercises[state.exerciseIndex].moduleNumber} concluído. Mais um passo na sua jornada!`;
+  document.getElementById("progression-title").textContent = `VOCÊ DESBLOQUEOU O ${lesson.ordinal} MÓDULO!`;
+  document.getElementById("progression-completed").textContent = `Módulo ${state.exercises[state.exerciseIndex].moduleNumber} concluído: 8 frases praticadas. Mais um passo na sua jornada!`;
   document.getElementById("progression-icon").textContent = nextModule.icon;
-  document.getElementById("progression-learning").textContent = `O nível ${nextModule.level} traz: ${lesson.title}`;
+  document.getElementById("progression-learning").textContent = `O módulo ${nextModule.moduleNumber} traz: ${lesson.title}`;
   document.getElementById("progression-description").textContent = lesson.description;
   document.getElementById("progression-tip").textContent = lesson.tip;
 
@@ -1017,6 +1037,7 @@ function fitPageToViewport() {
   const page = document.querySelector(".page");
   const content = page?.querySelector(":scope > .page-content");
   if (!content) return;
+  const footer = page.querySelector(":scope > .menu-footer");
 
   // Mantém a margem fora da escala: somente os elementos internos diminuem.
   const initialPadding = parseFloat(getComputedStyle(content).paddingLeft) || 16;
@@ -1028,10 +1049,11 @@ function fitPageToViewport() {
     const viewport = window.visualViewport;
     const width = viewport?.width || window.innerWidth;
     const height = viewport?.height || window.innerHeight;
+    const contentHeight = Math.max(1, height - (footer?.offsetHeight || 0));
     const sideMargin = Math.min(40, Math.max(16, width * 0.028));
     const verticalMargin = Math.min(initialPadding, height * 0.05);
     const availableWidth = Math.max(1, width - sideMargin * 2);
-    const availableHeight = Math.max(1, height - verticalMargin * 2);
+    const availableHeight = Math.max(1, contentHeight - verticalMargin * 2);
     content.style.transform = "none";
     let layoutWidth = availableWidth;
     let naturalWidth, naturalHeight, scale;
@@ -1048,7 +1070,7 @@ function fitPageToViewport() {
     }
     content.style.transform = `scale(${scale})`;
     content.style.left = `${(width - naturalWidth * scale) / 2}px`;
-    content.style.top = `${(height - naturalHeight * scale) / 2}px`;
+    content.style.top = `${(contentHeight - naturalHeight * scale) / 2}px`;
   }
 
   function scheduleFit() {
@@ -1056,6 +1078,7 @@ function fitPageToViewport() {
   }
 
   new ResizeObserver(scheduleFit).observe(content);
+  if (footer) new ResizeObserver(scheduleFit).observe(footer);
   // Ranking, autosave e textos dos exercícios podem mudar após a primeira medição.
   new MutationObserver(scheduleFit).observe(content, { childList: true, subtree: true, characterData: true });
   window.addEventListener("resize", scheduleFit);
@@ -1071,5 +1094,6 @@ document.addEventListener("DOMContentLoaded", () => {
   else if (page === "game") initGame();
   else if (page === "result") initResult();
   else if (page === "progression") initProgression();
+  initThemeControl();
   fitPageToViewport();
 });
